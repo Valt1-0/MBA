@@ -12,6 +12,9 @@ web-build/
 # expo router
 expo-env.d.ts
 
+/data/admin-key.json
+/utils/firebase.js
+
 # firebase/supabase/vexo
 .env
 

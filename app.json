@@ -3,39 +3,47 @@
     "name": "MBA",
     "slug": "MBA",
     "version": "1.0.0",
-
     "scheme": "MBA",
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/icon.png"
     },
-    "plugins": ["expo-router"],
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "NSLocationWhenInUseUsageDescription": "Permettez à Jolt d'utiliser votre localisation pour améliorer votre expérience."
+        }
+      ],
+      ["expo-router"]
+    ],
     "experiments": {
       "typedRoutes": true,
-
       "tsconfigPaths": true
     },
-
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-
     "userInterfaceStyle": "light",
-
     "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "resizeMode": "cover",
+      "backgroundColor": "#DDC97A"
     },
     "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Permettez à Jolt d'utiliser votre localisation pour améliorer votre expérience."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       }
-    }
+    },
+    "androidNavigationBar": {
+      "backgroundColor": "#DDC97A"
+    },
   }
 }
