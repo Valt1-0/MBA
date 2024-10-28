@@ -1,19 +1,23 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, Text, TouchableOpacity, Alert, Platform } from "react-native";
-import MapView, { Callout, Marker } from "react-native-maps";  
+import MapView, { Callout, Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { FontAwesome, Entypo, Zocial } from "@expo/vector-icons";
+import { FontAwesome, Entypo } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { getColorByType } from "../../utils/functions";
 import { db } from "../../utils/firebase";
 import { collection, getDocs } from "firebase/firestore";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import SwipeUp from "../../components/SwipeUp";
 
 const HomeScreen = () => {
   const [places, setPlaces] = useState([]);
   const [activeButton, setActiveButton] = useState(null);
   const [selectedPlace, setSelectedPlace] = useState(null);
+  const [city, setCity] = useState(null);
   const mapRef = useRef(null);
+  const [panelOpen, setPanelOpen] = useState(false);
 
   useEffect(() => {
     const fetchPlaces = async () => {
@@ -45,6 +49,28 @@ const HomeScreen = () => {
         longitudeDelta: 0.28,
       };
 
+      // Reverse Geocoding to get the city name
+      const reverseGeocode = async (latitude, longitude) => {
+        const geocoded = await Location.reverseGeocodeAsync({
+          latitude,
+          longitude,
+        });
+        return geocoded;
+      };
+
+      const locationDetails = await reverseGeocode(
+        userCoords.latitude,
+        userCoords.longitude
+      );
+
+      if (locationDetails.length > 0) {
+        const { city } = locationDetails[0]; // Get the city from the result
+        setCity(city);
+        console.log("Nearest city:", city);
+      } else {
+        console.log("No city found for these coordinates.");
+      }
+
       if (mapRef.current) {
         mapRef.current.animateCamera(
           {
@@ -52,18 +78,18 @@ const HomeScreen = () => {
             center: userCoords,
             zoom: Platform.OS === "ios" ? 0 : 19,
           },
-          { duration: 200 }
+          { duration: 500 }
         );
       }
     })();
-  },[]);
+  }, []);
 
   const handleMarkerPress = (place) => {
     setSelectedPlace(place);
   };
 
   return (
-    <>
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar hidden={true} />
       <View style={{ flex: 1 }}>
         <MapView
@@ -72,7 +98,6 @@ const HomeScreen = () => {
           followsUserLocation={true}
           showsUserLocation={true}
           onPress={() => setSelectedPlace(null)}
-          
         >
           {places.map((place) => (
             <Marker
@@ -96,84 +121,16 @@ const HomeScreen = () => {
             </Marker>
           ))}
         </MapView>
-        {selectedPlace && (
-          <View style={styles.infoContainer}>
-            <Text style={styles.infoText}>{selectedPlace.name}</Text>
-            <Text style={styles.infoText}>{selectedPlace.type}</Text>
-            <View style={styles.voteContainer}>
-              <View style={styles.voteButtonContainer}>
-                <Text style={styles.voteCount}>42</Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    console.log("UP");
-                    setActiveButton(activeButton === "up" ? null : "up");
-                  }}
-                >
-                  <Entypo
-                    name="arrow-bold-up"
-                    size={24}
-                    color={activeButton === "up" ? "#DDC97A" : "gray"}
-                  />
-                </TouchableOpacity>
-              </View>
-              <View style={styles.voteButtonContainer}>
-                <Text style={styles.voteCount}>5</Text>
-                <TouchableOpacity
-                  onPress={() => {
-                    console.log("DOWN");
-                    setActiveButton(activeButton === "down" ? null : "down");
-                  }}
-                >
-                  <Entypo
-                    name="arrow-bold-down"
-                    size={24}
-                    color={activeButton === "down" ? "#DDC97A" : "gray"}
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        )}
+        <SwipeUp
+          props={{
+            city: city,
+            markerData: selectedPlace,
+          }}
+          onPanelToggle={setPanelOpen}
+        />
       </View>
-    </>
+    </GestureHandlerRootView>
   );
-};
-
-const styles = {
-  infoContainer: {
-    position: "absolute",
-    bottom: 20,
-    left: 20,
-    right: 20,
-    backgroundColor: "white",
-    padding: 10,
-    borderRadius: 10,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
-  },
-  infoText: {
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  voteContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 8,
-    gap: 24,
-  },
-  voteButtonContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  voteCount: {
-    fontSize: 14,
-  },
 };
 
 export default HomeScreen;
