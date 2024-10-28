@@ -1,9 +1,8 @@
-import React, { useMemo } from "react";
-import { View, Text, Dimensions } from "react-native";
+import React from "react";
+import { View, Text } from "react-native";
 import {
   GestureHandlerRootView,
-  GestureDetector,
-  Gesture,
+  PanGestureHandler,
 } from "react-native-gesture-handler";
 import Animated, {
   useAnimatedStyle,
@@ -22,43 +21,38 @@ const DraggablePanel = () => {
   const height = frame.height - (insets.bottom + insets.top);
   const translateY = useSharedValue(height); // Le panneau commence en bas de l'écran
 
-  // Définir le geste de drag vertical
-  const gesture = useMemo(
-    () =>
-      Gesture.Pan()
-        .shouldCancelWhenOutside(true)
-        .onUpdate((event) => {
-          // Ajuster la position Y en fonction du drag
-          translateY.value = Math.max(
-            height * 0.5,
-            translateY.value + event.translationY
-          );
-        })
-        .onEnd(() => {
-          // Déterminer la position finale : moitié de l'écran ou tout en bas
-          if (translateY.value > height * 0.75) {
-            translateY.value = withTiming(height); // Revenir complètement en bas
-          } else {
-            translateY.value = withTiming(height * 0.5); // Revenir à 50% de la hauteur
-          }
-        }),
-    [height, translateY]
-  );
+  const onGestureEvent = (event) => {
+    translateY.value = Math.max(
+      height * 0.5,
+      height + event.nativeEvent.translationY
+    );
+  };
 
-  // Appliquer le style animé pour le déplacement vertical du panneau
+  const onGestureEnd = (event) => {
+    if (event.nativeEvent.velocityY > 0) {
+      translateY.value = withTiming(height, { duration: 300 });
+    } else {
+      translateY.value = withTiming(height * 0.5, { duration: 300 });
+    }
+  };
+
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
   }));
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <>
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <Text style={{ fontSize: 18, fontWeight: "bold" }}>
           Contenu principal
         </Text>
       </View>
 
-      <GestureDetector gesture={gesture}>
+      <PanGestureHandler
+        onGestureEvent={onGestureEvent}
+        onEnded={onGestureEnd}
+        hitSlop={{ top: 50, bottom: 50, left: 50, right: 50 }} // Augmente la zone de détection
+      >
         <Animated.View
           style={[
             animatedStyle,
@@ -66,7 +60,7 @@ const DraggablePanel = () => {
               height: height,
               width: "100%",
               position: "absolute",
-              bottom: insets.bottom,
+              bottom: 0,
               backgroundColor: "white",
               borderTopLeftRadius: 20,
               borderTopRightRadius: 20,
@@ -76,7 +70,6 @@ const DraggablePanel = () => {
               shadowOpacity: 0.8,
               shadowRadius: 2,
               elevation: 5,
-              zIndex: 100,
             },
           ]}
         >
@@ -99,8 +92,8 @@ const DraggablePanel = () => {
             Contenu du panneau glissant
           </Text>
         </Animated.View>
-      </GestureDetector>
-    </GestureHandlerRootView>
+      </PanGestureHandler>
+    </>
   );
 };
 

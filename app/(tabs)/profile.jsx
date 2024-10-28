@@ -3,13 +3,14 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Entypo } from "@expo/vector-icons"; // Importer les icônes
 import SwipeUpPanel from "../../components/SwipeUp";
-
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 export default function Home() {
   const [activeButton, setActiveButton] = useState(null);
 
   return (
-    <SafeAreaView className="flex-1 mb-[60px]">
-      {/* <View className="flex items-center justify-center bg-gray-100">
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView className="flex-1 mb-[60px]">
+        {/* <View className="flex items-center justify-center bg-gray-100">
         <Text className="text-xl font-bold">Home</Text>
 
         <View className="w-40 p-4 bg-white border rounded-lg shadow-lg mt-4">
@@ -50,7 +51,8 @@ export default function Home() {
           </View>
         </View>
       </View> */}
-      <SwipeUpPanel />
-    </SafeAreaView>
+        <SwipeUpPanel />
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
