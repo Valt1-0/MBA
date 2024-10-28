@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { View, Text, Dimensions } from "react-native";
 import {
   GestureHandlerRootView,
@@ -23,22 +23,27 @@ const DraggablePanel = () => {
   const translateY = useSharedValue(height); // Le panneau commence en bas de l'écran
 
   // Définir le geste de drag vertical
-  const gesture = Gesture.Pan().shouldCancelWhenOutside(true)
-    .onUpdate((event) => {
-      // Ajuster la position Y en fonction du drag
-      translateY.value = Math.max(
-        height * 0.5,
-        translateY.value + event.translationY
-      );
-    })
-    .onEnd(() => {
-      // Déterminer la position finale : moitié de l'écran ou tout en bas
-      if (translateY.value > height * 0.75) {
-        translateY.value = withTiming(height); // Revenir complètement en bas
-      } else {
-        translateY.value = withTiming(height * 0.5); // Revenir à 50% de la hauteur
-      }
-    });
+  const gesture = useMemo(
+    () =>
+      Gesture.Pan()
+        .shouldCancelWhenOutside(true)
+        .onUpdate((event) => {
+          // Ajuster la position Y en fonction du drag
+          translateY.value = Math.max(
+            height * 0.5,
+            translateY.value + event.translationY
+          );
+        })
+        .onEnd(() => {
+          // Déterminer la position finale : moitié de l'écran ou tout en bas
+          if (translateY.value > height * 0.75) {
+            translateY.value = withTiming(height); // Revenir complètement en bas
+          } else {
+            translateY.value = withTiming(height * 0.5); // Revenir à 50% de la hauteur
+          }
+        }),
+    [height, translateY]
+  );
 
   // Appliquer le style animé pour le déplacement vertical du panneau
   const animatedStyle = useAnimatedStyle(() => ({
@@ -61,7 +66,7 @@ const DraggablePanel = () => {
               height: height,
               width: "100%",
               position: "absolute",
-              bottom: 0,
+              bottom: insets.bottom,
               backgroundColor: "white",
               borderTopLeftRadius: 20,
               borderTopRightRadius: 20,
@@ -71,6 +76,7 @@ const DraggablePanel = () => {
               shadowOpacity: 0.8,
               shadowRadius: 2,
               elevation: 5,
+              zIndex: 100,
             },
           ]}
         >
