@@ -46,13 +46,10 @@ const HomeScreen = () => {
     })();
   }, []);
 
-  const handleMarkerPress = (place) => {
-    setSelectedPlace(place);
-  };
+  const handleMarkerPress = (place) => {};
 
   return (
     <>
-   
       <StatusBar hidden={true} />
       <View className="flex-1">
         {location ? (
@@ -74,13 +71,18 @@ const HomeScreen = () => {
                   latitude: place.latitude,
                   longitude: place.longitude,
                 }}
-                onPress={() => handleMarkerPress(place)}
+                onPress={(e) => {
+                  e.stopPropagation();
+                  setSelectedPlace(place);
+                }}
               >
-                <FontAwesome
-                  name="map-pin"
-                  size={25}
-                  color={getColorByType(place.type)}
-                />
+                <TouchableOpacity>
+                  <FontAwesome
+                    name="map-pin"
+                    size={25}
+                    color={getColorByType(place.type)}
+                  />
+                </TouchableOpacity>
               </Marker>
             ))}
           </MapView>
@@ -131,7 +133,7 @@ const HomeScreen = () => {
           </View>
         )}
       </View>
-      </>
+    </>
   );
 };
 
