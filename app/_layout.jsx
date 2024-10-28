@@ -1,20 +1,20 @@
-import '../global.css';
-import { Stack } from 'expo-router';
-export const unstable_settings = {
-  // Ensure that reloading on `/modal` keeps a back button present.
-  initialRouteName: 'splashscreen',
-};
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text } from 'react-native';
+import * as SplashScreen from 'expo-splash-screen';
+import * as Font from 'expo-font';
+import { Stack, useRouter } from 'expo-router';
 
-function RootLayout() {
+
+
+export default function RootLayout() {
+  
+
   return (
-    <Stack initialRouteName='splashscreen'>
-      <Stack.Screen name="splashscreen"  options={{ headerShown: false }}  />
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-    </Stack>
+    <View style={{ flex: 1 }}>
+      <Stack>  
+        <Stack.Screen name="splashscreen" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      </Stack>
+    </View>
   );
 }
-
-// Ajoutez un displayName pour aider au débogage
-RootLayout.displayName = 'RootLayout';
-
-export default RootLayout;
