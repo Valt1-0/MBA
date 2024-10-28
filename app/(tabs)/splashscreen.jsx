@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from "react";
+import React, { useRef, useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,26 +9,24 @@ import {
 } from "react-native";
 import LottieView from "lottie-react-native";
 import * as ExpoSplashScreen from "expo-splash-screen";
-import { useNavigation } from "@react-navigation/native";
+import * as Location from "expo-location";
+import { Alert } from "react-native";
+import { router } from "expo-router";
 
-//ExpoSplashScreen.preventAutoHideAsync();
+ExpoSplashScreen.preventAutoHideAsync();
 
 const AnimatedLottieView = Animated.createAnimatedComponent(LottieView);
 const AnimatedLottieViewSplash2 = Animated.createAnimatedComponent(LottieView);
 
 const SplashScreen = () => {
-    const navigation = useNavigation();
   const opacityAnimationLoading = new Animated.Value(0);
   const opacityAnimationSplash1 = new Animated.Value(1);
   const opacityAnimationSplash2 = new Animated.Value(0);
   const splashScreen2 = useRef(null);
+  const [location, setLocation] = useState(null);
 
   const screenWidth = Dimensions.get("window").width;
   const translateX = useRef(new Animated.Value(-screenWidth)).current;
-
-  // Choix aléatoire d'un message
-  // const randomIndex = Math.floor(Math.random() * messages.length);
-  // const randomMessage = messages[randomIndex];
 
   const handleAnimationComplete = () => {
     Animated.timing(translateX, {
@@ -49,16 +47,22 @@ const SplashScreen = () => {
     splashScreen2.current?.play(1);
   };
 
-  const startScrollAnimation = (event) => {
-    const { width } = event.nativeEvent.layout;
-    console.log("screenWidth", screenWidth, width, translateX);
-    // Animation de déplacement
-    Animated.timing(translateX, {
-      toValue: 1,
-      duration: 3000,
-      useNativeDriver: false,
-    }).start();
-  };
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Permission to access location was denied");
+        return;
+      }
+
+      let userLocation = await Location.getCurrentPositionAsync({});
+      const userCoords = {
+        latitude: userLocation.coords.latitude,
+        longitude: userLocation.coords.longitude,
+      };
+      setLocation(userCoords);
+    })();
+  }, []);
 
   async function prepare() {
     try {
@@ -68,8 +72,6 @@ const SplashScreen = () => {
         useNativeDriver: true,
       }).start();
 
-      //Vérification permission
-     // await permissionsCheck();
       await new Promise((resolve) => setTimeout(resolve, 2000)); // Delay
     } catch (e) {
       console.warn("Error : " + e);
@@ -78,12 +80,12 @@ const SplashScreen = () => {
     }
   }
   const onLayoutRootView = useCallback(async () => {
-   // await ExpoSplashScreen.hideAsync();
+    await ExpoSplashScreen.hideAsync();
   }, []);
 
   return (
     <View
-      className="flex-1 bg-[#70E575] justify-center items-center"
+      className="flex-1 bg-[#DDC97A] justify-center items-center"
       onLayout={onLayoutRootView}
     >
       <>
@@ -94,14 +96,14 @@ const SplashScreen = () => {
           ]}
         >
           <AnimatedLottieView
-            source={require("../assets/anims/MBA.json")}
+            source={require("../../assets/anims/MBA.json")}
             style={[styles.animation]}
             loop={false}
             autoPlay
             onAnimationFinish={prepare}
           />
           <AnimatedLottieViewSplash2
-            source={require("../assets/anims/MBA-Illustration.json")}
+            source={require("../../assets/anims/MBA-Illustration.json")}
             style={[
               styles.loadingAnimation,
               { opacity: opacityAnimationLoading },
@@ -110,26 +112,15 @@ const SplashScreen = () => {
             autoPlay
           />
         </Animated.View>
-                <AnimatedLottieView
+        <AnimatedLottieView
           ref={splashScreen2}
-          source={require("../assets/anims/MBA-Illustration.json")}
+          source={require("../../assets/anims/MBA-Illustration.json")}
           style={[styles.animation, { opacity: opacityAnimationSplash2 }]}
           loop={false}
           onAnimationFinish={() => {
-            console.log("SplashScreen2 finish !");
-            // navigation.replace("(tabs)");
+            router.push("/");
           }}
         />
-        {/* <AnimatedLottieViewText
-          ref={splashScreen2}
-          source={require("../../assets/anims/Jolt-SplashScreen-Part2.json")}
-          style={[styles.animation, { opacity: opacityAnimationSplash2 }]}
-          loop={false}
-          onAnimationFinish={() => {
-            navigation.replace("HomeScreen");
-            // onEnd();
-          }}
-        /> */}
       </>
     </View>
   );
@@ -159,17 +150,9 @@ const styles = StyleSheet.create({
     color: "white",
     textAlign: "center",
   },
-  messageContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignContent: "center",
-  },
   icon: {
     fontSize: 20,
     marginLeft: 5,
-  },
-  message: {
-    fontSize: 16,
   },
 });
 
