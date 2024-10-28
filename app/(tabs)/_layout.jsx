@@ -11,9 +11,8 @@ export default function TabLayout() {
         tabBarInactiveTintColor: "gray",
       }}
     >
- 
       <Tabs.Screen
-        name="index" 
+        name="index"
         options={{
           headerShown: false,
           title: "Home",
