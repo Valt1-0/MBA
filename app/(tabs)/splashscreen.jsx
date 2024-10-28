@@ -9,8 +9,6 @@ import {
 } from "react-native";
 import LottieView from "lottie-react-native";
 import * as ExpoSplashScreen from "expo-splash-screen";
-import * as Location from "expo-location";
-import { Alert } from "react-native";
 import { router } from "expo-router";
 
 ExpoSplashScreen.preventAutoHideAsync();
@@ -23,7 +21,6 @@ const SplashScreen = () => {
   const opacityAnimationSplash1 = new Animated.Value(1);
   const opacityAnimationSplash2 = new Animated.Value(0);
   const splashScreen2 = useRef(null);
-  const [location, setLocation] = useState(null);
 
   const screenWidth = Dimensions.get("window").width;
   const translateX = useRef(new Animated.Value(-screenWidth)).current;
@@ -46,23 +43,6 @@ const SplashScreen = () => {
     }).start();
     splashScreen2.current?.play(1);
   };
-
-  useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== "granted") {
-        Alert.alert("Permission to access location was denied");
-        return;
-      }
-
-      let userLocation = await Location.getCurrentPositionAsync({});
-      const userCoords = {
-        latitude: userLocation.coords.latitude,
-        longitude: userLocation.coords.longitude,
-      };
-      setLocation(userCoords);
-    })();
-  }, []);
 
   async function prepare() {
     try {
