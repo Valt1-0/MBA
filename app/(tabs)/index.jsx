@@ -56,7 +56,7 @@ const HomeScreen = () => {
         );
       }
     })();
-  });
+  },[]);
 
   const handleMarkerPress = (place) => {
     setSelectedPlace(place);

@@ -2,10 +2,18 @@ import React from "react";
 import { View, Text, Dimensions } from "react-native";
 import { GestureHandlerRootView, GestureDetector, Gesture } from "react-native-gesture-handler";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import {
+  useSafeAreaFrame,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
-const { height } = Dimensions.get("window");
 
 const DraggablePanel = () => {
+     const frame = useSafeAreaFrame();
+       const insets = useSafeAreaInsets();
+ 
+
+     const height  = frame.height - (insets.bottom + insets.top);
   const translateY = useSharedValue(height); // Le panneau commence en bas de l'écran
 
   // Définir le geste de drag vertical
