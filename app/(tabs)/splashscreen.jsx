@@ -1,4 +1,4 @@
-import React, { useRef, useCallback } from "react";
+import React, { useRef, useCallback, useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -9,21 +9,24 @@ import {
 } from "react-native";
 import LottieView from "lottie-react-native";
 import * as ExpoSplashScreen from "expo-splash-screen";
+import * as Location from "expo-location";
+import { Alert } from "react-native";
+import { router } from "expo-router";
 
 ExpoSplashScreen.preventAutoHideAsync();
 
 const AnimatedLottieView = Animated.createAnimatedComponent(LottieView);
 const AnimatedLottieViewSplash2 = Animated.createAnimatedComponent(LottieView);
 
-const SplashScreen = ({ navigation }) => {
+const SplashScreen = () => {
   const opacityAnimationLoading = new Animated.Value(0);
   const opacityAnimationSplash1 = new Animated.Value(1);
   const opacityAnimationSplash2 = new Animated.Value(0);
   const splashScreen2 = useRef(null);
+  const [location, setLocation] = useState(null);
 
   const screenWidth = Dimensions.get("window").width;
   const translateX = useRef(new Animated.Value(-screenWidth)).current;
-
 
   const handleAnimationComplete = () => {
     Animated.timing(translateX, {
@@ -44,16 +47,22 @@ const SplashScreen = ({ navigation }) => {
     splashScreen2.current?.play(1);
   };
 
-  const startScrollAnimation = (event) => {
-    const { width } = event.nativeEvent.layout;
-    console.log("screenWidth", screenWidth, width, translateX);
-    // Animation de déplacement
-    Animated.timing(translateX, {
-      toValue: 1,
-      duration: 3000,
-      useNativeDriver: false,
-    }).start();
-  };
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Permission to access location was denied");
+        return;
+      }
+
+      let userLocation = await Location.getCurrentPositionAsync({});
+      const userCoords = {
+        latitude: userLocation.coords.latitude,
+        longitude: userLocation.coords.longitude,
+      };
+      setLocation(userCoords);
+    })();
+  }, []);
 
   async function prepare() {
     try {
@@ -63,8 +72,6 @@ const SplashScreen = ({ navigation }) => {
         useNativeDriver: true,
       }).start();
 
-      //Vérification permission
-      await permissionsCheck();
       await new Promise((resolve) => setTimeout(resolve, 2000)); // Delay
     } catch (e) {
       console.warn("Error : " + e);
@@ -89,14 +96,14 @@ const SplashScreen = ({ navigation }) => {
           ]}
         >
           <AnimatedLottieView
-            source={require("../assets/anims/MBA.json")}
+            source={require("../../assets/anims/MBA.json")}
             style={[styles.animation]}
             loop={false}
             autoPlay
             onAnimationFinish={prepare}
           />
           <AnimatedLottieViewSplash2
-            source={require("../assets/anims/MBA-Illustration.json")}
+            source={require("../../assets/anims/MBA-Illustration.json")}
             style={[
               styles.loadingAnimation,
               { opacity: opacityAnimationLoading },
@@ -105,16 +112,15 @@ const SplashScreen = ({ navigation }) => {
             autoPlay
           />
         </Animated.View>
-        {/* <AnimatedLottieViewText
+        <AnimatedLottieView
           ref={splashScreen2}
-          source={require("../../assets/anims/Jolt-SplashScreen-Part2.json")}
+          source={require("../../assets/anims/MBA-Illustration.json")}
           style={[styles.animation, { opacity: opacityAnimationSplash2 }]}
           loop={false}
           onAnimationFinish={() => {
-            navigation.replace("HomeScreen");
-            // onEnd();
+            router.push("/");
           }}
-        /> */}
+        />
       </>
     </View>
   );
