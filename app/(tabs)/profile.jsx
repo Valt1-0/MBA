@@ -2,18 +2,17 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Entypo } from "@expo/vector-icons"; // Importer les icônes
+import SwipeUpPanel from "../../components/SwipeUp";
 
 export default function Home() {
   const [activeButton, setActiveButton] = useState(null);
 
   return (
     <SafeAreaView className="flex-1 mb-[60px]">
-      <View className="flex items-center justify-center bg-gray-100">
+      {/* <View className="flex items-center justify-center bg-gray-100">
         <Text className="text-xl font-bold">Home</Text>
 
-        {/* Composant personnalisé pour la carte */}
         <View className="w-40 p-4 bg-white border rounded-lg shadow-lg mt-4">
-          {/* Titre et type */}
           <Text className="text-xs font-bold">Tour Eiffel</Text>
           <Text className="text-gray-500 text-xs">Monument Historique</Text>
 
@@ -50,7 +49,8 @@ export default function Home() {
             </View>
           </View>
         </View>
-      </View>
+      </View> */}
+      <SwipeUpPanel />
     </SafeAreaView>
   );
 }
