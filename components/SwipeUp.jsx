@@ -32,14 +32,15 @@ const DraggablePanel = () => {
       );
     })
     .onEnd(() => {
-      // Régle la position finale du panneau
-      translateY.value =
-        translateY.value > height * 0.75
-          ? withTiming(height)
-          : withTiming(height * 0.5);
+      // Déterminer la position finale : moitié de l'écran ou tout en bas
+      if (translateY.value > height * 0.75) {
+        translateY.value = withTiming(height); // Revenir complètement en bas
+      } else {
+        translateY.value = withTiming(height * 0.5); // Revenir à 50% de la hauteur
+      }
     });
 
-  // Style animé pour le panneau
+  // Appliquer le style animé pour le déplacement vertical du panneau
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
   }));
@@ -54,7 +55,6 @@ const DraggablePanel = () => {
 
       <GestureDetector gesture={gesture}>
         <Animated.View
-          collapsable={false}
           style={[
             animatedStyle,
             {
