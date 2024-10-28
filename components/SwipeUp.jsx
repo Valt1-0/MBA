@@ -11,9 +11,13 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 
-const { height } = Dimensions.get("window");
 
 const DraggablePanel = () => {
+     const frame = useSafeAreaFrame();
+       const insets = useSafeAreaInsets();
+ 
+
+     const height  = frame.height - (insets.bottom + insets.top);
   const translateY = useSharedValue(height); // Le panneau commence en bas de l'écran
 
   // Définir le geste de drag vertical
