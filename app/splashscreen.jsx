@@ -24,9 +24,6 @@ const SplashScreen = ({ navigation }) => {
   const screenWidth = Dimensions.get("window").width;
   const translateX = useRef(new Animated.Value(-screenWidth)).current;
 
-  // Choix aléatoire d'un message
-  const randomIndex = Math.floor(Math.random() * messages.length);
-  const randomMessage = messages[randomIndex];
 
   const handleAnimationComplete = () => {
     Animated.timing(translateX, {
@@ -81,7 +78,7 @@ const SplashScreen = ({ navigation }) => {
 
   return (
     <View
-      className="flex-1 bg-[#70E575] justify-center items-center"
+      className="flex-1 bg-[#DDC97A] justify-center items-center"
       onLayout={onLayoutRootView}
     >
       <>
@@ -147,17 +144,9 @@ const styles = StyleSheet.create({
     color: "white",
     textAlign: "center",
   },
-  messageContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    alignContent: "center",
-  },
   icon: {
     fontSize: 20,
     marginLeft: 5,
-  },
-  message: {
-    fontSize: 16,
   },
 });
 
