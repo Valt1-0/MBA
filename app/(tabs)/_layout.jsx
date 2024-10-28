@@ -5,13 +5,14 @@ import "../../global.css";
 export default function TabLayout() {
   return (
     <Tabs
+      initialRouteName="index"
       screenOptions={{
         tabBarActiveTintColor: "#DDC97A",
         tabBarInactiveTintColor: "gray",
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="index" 
         options={{
           headerShown: false,
           title: "Home",

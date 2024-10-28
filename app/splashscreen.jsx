@@ -9,13 +9,15 @@ import {
 } from "react-native";
 import LottieView from "lottie-react-native";
 import * as ExpoSplashScreen from "expo-splash-screen";
+import { useNavigation } from "@react-navigation/native";
 
-ExpoSplashScreen.preventAutoHideAsync();
+//ExpoSplashScreen.preventAutoHideAsync();
 
 const AnimatedLottieView = Animated.createAnimatedComponent(LottieView);
 const AnimatedLottieViewSplash2 = Animated.createAnimatedComponent(LottieView);
 
-const SplashScreen = ({ navigation }) => {
+const SplashScreen = () => {
+    const navigation = useNavigation();
   const opacityAnimationLoading = new Animated.Value(0);
   const opacityAnimationSplash1 = new Animated.Value(1);
   const opacityAnimationSplash2 = new Animated.Value(0);
@@ -25,8 +27,8 @@ const SplashScreen = ({ navigation }) => {
   const translateX = useRef(new Animated.Value(-screenWidth)).current;
 
   // Choix aléatoire d'un message
-  const randomIndex = Math.floor(Math.random() * messages.length);
-  const randomMessage = messages[randomIndex];
+  // const randomIndex = Math.floor(Math.random() * messages.length);
+  // const randomMessage = messages[randomIndex];
 
   const handleAnimationComplete = () => {
     Animated.timing(translateX, {
@@ -67,7 +69,7 @@ const SplashScreen = ({ navigation }) => {
       }).start();
 
       //Vérification permission
-      await permissionsCheck();
+     // await permissionsCheck();
       await new Promise((resolve) => setTimeout(resolve, 2000)); // Delay
     } catch (e) {
       console.warn("Error : " + e);
@@ -76,7 +78,7 @@ const SplashScreen = ({ navigation }) => {
     }
   }
   const onLayoutRootView = useCallback(async () => {
-    await ExpoSplashScreen.hideAsync();
+   // await ExpoSplashScreen.hideAsync();
   }, []);
 
   return (
@@ -108,6 +110,16 @@ const SplashScreen = ({ navigation }) => {
             autoPlay
           />
         </Animated.View>
+                <AnimatedLottieView
+          ref={splashScreen2}
+          source={require("../assets/anims/MBA-Illustration.json")}
+          style={[styles.animation, { opacity: opacityAnimationSplash2 }]}
+          loop={false}
+          onAnimationFinish={() => {
+            console.log("SplashScreen2 finish !");
+            // navigation.replace("(tabs)");
+          }}
+        />
         {/* <AnimatedLottieViewText
           ref={splashScreen2}
           source={require("../../assets/anims/Jolt-SplashScreen-Part2.json")}

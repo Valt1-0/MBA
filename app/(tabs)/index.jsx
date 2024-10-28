@@ -51,7 +51,8 @@ const HomeScreen = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1">
+    <>
+   
       <StatusBar hidden={true} />
       <View className="flex-1">
         {location ? (
@@ -130,7 +131,7 @@ const HomeScreen = () => {
           </View>
         )}
       </View>
-    </SafeAreaView>
+      </>
   );
 };
 
