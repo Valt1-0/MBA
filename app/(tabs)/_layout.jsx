@@ -5,27 +5,13 @@ import "../../global.css";
 export default function TabLayout() {
   return (
     <Tabs
-      initialRouteName="splashscreen"
+      initialRouteName="index"
       screenOptions={{
         tabBarActiveTintColor: "#DDC97A",
         tabBarInactiveTintColor: "gray",
       }}
     >
-      <Tabs.Screen
-        name="splashscreen"
-        options={{
-          headerShown: false,
-          // href: null,
-          title: "SplashScreen",
-          tabBarIcon: ({ focused }) => (
-            <Ionicons
-              name="home"
-              size={24}
-              color={focused ? "#DDC97A" : "gray"}
-            />
-          ),
-        }}
-      />
+ 
       <Tabs.Screen
         name="index" 
         options={{

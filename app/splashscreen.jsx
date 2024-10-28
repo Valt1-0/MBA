@@ -96,14 +96,14 @@ const SplashScreen = () => {
           ]}
         >
           <AnimatedLottieView
-            source={require("../../assets/anims/MBA.json")}
+            source={require("../assets/anims/MBA.json")}
             style={[styles.animation]}
             loop={false}
             autoPlay
             onAnimationFinish={prepare}
           />
           <AnimatedLottieViewSplash2
-            source={require("../../assets/anims/MBA-Illustration.json")}
+            source={require("../assets/anims/MBA-Illustration.json")}
             style={[
               styles.loadingAnimation,
               { opacity: opacityAnimationLoading },
@@ -114,11 +114,11 @@ const SplashScreen = () => {
         </Animated.View>
         <AnimatedLottieView
           ref={splashScreen2}
-          source={require("../../assets/anims/MBA-Illustration.json")}
+          source={require("../assets/anims/MBA-Illustration.json")}
           style={[styles.animation, { opacity: opacityAnimationSplash2 }]}
           loop={false}
           onAnimationFinish={() => {
-            router.push("/");
+            router.replace("/(tabs)");
           }}
         />
       </>
