@@ -23,7 +23,7 @@ const DraggablePanel = () => {
   const translateY = useSharedValue(height); // Le panneau commence en bas de l'écran
 
   // Définir le geste de drag vertical
-  const gesture = Gesture.Pan()
+  const gesture = Gesture.Pan().shouldCancelWhenOutside(true)
     .onUpdate((event) => {
       // Ajuster la position Y en fonction du drag
       translateY.value = Math.max(
