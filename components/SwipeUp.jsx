@@ -10,23 +10,25 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-
+import {
+  useSafeAreaFrame,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 
 const DraggablePanel = () => {
-     const frame = useSafeAreaFrame();
-       const insets = useSafeAreaInsets();
- 
+  const frame = useSafeAreaFrame();
+  const insets = useSafeAreaInsets();
 
-     const height  = frame.height - (insets.bottom + insets.top);
+  const height = frame.height - (insets.bottom + insets.top);
   const translateY = useSharedValue(height); // Le panneau commence en bas de l'écran
 
   // Définir le geste de drag vertical
   const gesture = Gesture.Pan()
     .onUpdate((event) => {
-      // Déplacer le panneau selon la position du drag
+      // Ajuster la position Y en fonction du drag
       translateY.value = Math.max(
         height * 0.5,
-        Math.min(height, translateY.value + event.translationY)
+        translateY.value + event.translationY
       );
     })
     .onEnd(() => {
@@ -45,7 +47,7 @@ const DraggablePanel = () => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Text style={{ fontSize: 24, fontWeight: "bold" }}>
+        <Text style={{ fontSize: 18, fontWeight: "bold" }}>
           Contenu principal
         </Text>
       </View>
@@ -65,23 +67,28 @@ const DraggablePanel = () => {
               borderTopRightRadius: 20,
               padding: 20,
               shadowColor: "#000",
-              shadowOffset: { width: 0, height: -2 },
-              shadowOpacity: 0.3,
-              shadowRadius: 4,
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.8,
+              shadowRadius: 2,
+              elevation: 5,
             },
           ]}
         >
           <View
             style={{
-              height: 5,
-              width: 60,
-              backgroundColor: "#ccc",
-              borderRadius: 5,
+              height: 4,
+              width: 48,
+              backgroundColor: "gray",
+              borderRadius: 2,
               alignSelf: "center",
-              marginBottom: 10,
+              marginBottom: 16,
             }}
           />
-          <Text style={{ fontSize: 24, textAlign: "center" }}>Détails</Text>
+          <Text
+            style={{ fontSize: 18, fontWeight: "bold", textAlign: "center" }}
+          >
+            Détails
+          </Text>
           <Text style={{ color: "gray", textAlign: "center" }}>
             Contenu du panneau glissant
           </Text>
