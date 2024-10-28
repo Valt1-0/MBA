@@ -1,9 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, Text, TouchableOpacity, Alert, Platform } from "react-native";
-import MapView, { Marker } from "react-native-maps";
-import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
-import MapView, { Callout, Marker } from "react-native-maps";
+import MapView, { Callout, Marker } from "react-native-maps";  
 import * as Location from "expo-location";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome, Entypo, Zocial } from "@expo/vector-icons";
@@ -44,17 +41,18 @@ const HomeScreen = () => {
       const userCoords = {
         latitude: userLocation.coords.latitude,
         longitude: userLocation.coords.longitude,
-        latitudeDelta: 0.001663,
-        longitudeDelta: 0.002001,
+        latitudeDelta: 0.38,
+        longitudeDelta: 0.28,
       };
 
       if (mapRef.current) {
         mapRef.current.animateCamera(
           {
+            altitude: 2000,
             center: userCoords,
-            zoom: Platform.OS === "ios" ? 5 : 19,
+            zoom: Platform.OS === "ios" ? 0 : 19,
           },
-          { duration: 1000 }
+          { duration: 200 }
         );
       }
     })();
@@ -74,6 +72,7 @@ const HomeScreen = () => {
           followsUserLocation={true}
           showsUserLocation={true}
           onPress={() => setSelectedPlace(null)}
+          
         >
           {places.map((place) => (
             <Marker
