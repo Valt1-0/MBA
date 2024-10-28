@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { View, Text, TouchableOpacity, Alert, Platform } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import * as Location from "expo-location";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { FontAwesome, Entypo } from "@expo/vector-icons";
+import { FontAwesome, Entypo, Zocial } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { getColorByType } from "../../utils/functions";
 import { db } from "../../utils/firebase";
 import { collection, getDocs } from "firebase/firestore";
 
 const HomeScreen = () => {
-  const [location, setLocation] = useState(null);
   const [places, setPlaces] = useState([]);
   const [activeButton, setActiveButton] = useState(null);
   const [selectedPlace, setSelectedPlace] = useState(null);
+  const mapRef = useRef(null);
 
   useEffect(() => {
     const fetchPlaces = async () => {
@@ -41,65 +41,66 @@ const HomeScreen = () => {
       const userCoords = {
         latitude: userLocation.coords.latitude,
         longitude: userLocation.coords.longitude,
+        latitudeDelta: 0.001663,
+        longitudeDelta: 0.002001,
       };
-      setLocation(userCoords);
-    })();
-  }, []);
 
-  const handleMarkerPress = (place) => {};
+      if (mapRef.current) {
+        mapRef.current.animateCamera(
+          {
+            center: userCoords,
+            zoom: Platform.OS === "ios" ? 5 : 19,
+          },
+          { duration: 1000 }
+        );
+      }
+    })();
+  });
+
+  const handleMarkerPress = (place) => {
+    setSelectedPlace(place);
+  };
 
   return (
     <>
       <StatusBar hidden={true} />
-      <View className="flex-1">
-        {location ? (
-          <MapView
-            style={{ width: "100%", height: "100%" }}
-            initialRegion={{
-              latitude: location.latitude,
-              longitude: location.longitude,
-              latitudeDelta: 0.04,
-              longitudeDelta: 0.05,
-            }}
-            showsUserLocation={true}
-            onPress={() => setSelectedPlace(null)}
-          >
-            {places.map((place) => (
-              <Marker
-                key={place.id}
-                coordinate={{
-                  latitude: place.latitude,
-                  longitude: place.longitude,
-                }}
-                onPress={(e) => {
-                  e.stopPropagation();
-                  setSelectedPlace(place);
-                }}
-              >
-                <TouchableOpacity>
-                  <FontAwesome
-                    name="map-pin"
-                    size={25}
-                    color={getColorByType(place.type)}
-                  />
-                </TouchableOpacity>
-              </Marker>
-            ))}
-          </MapView>
-        ) : null}
-
+      <View style={{ flex: 1 }}>
+        <MapView
+          ref={mapRef}
+          style={{ width: "100%", height: "100%" }}
+          followsUserLocation={true}
+          showsUserLocation={true}
+          onPress={() => setSelectedPlace(null)}
+        >
+          {places.map((place) => (
+            <Marker
+              key={place.id}
+              coordinate={{
+                latitude: place.latitude,
+                longitude: place.longitude,
+              }}
+              onPress={(e) => {
+                e.stopPropagation();
+                handleMarkerPress(place);
+              }}
+            >
+              <TouchableOpacity>
+                <FontAwesome
+                  name="map-pin"
+                  size={25}
+                  color={getColorByType(place.type)}
+                />
+              </TouchableOpacity>
+            </Marker>
+          ))}
+        </MapView>
         {selectedPlace && (
-          <View className="absolute bottom-12 left-20 right-20 h-28 bg-white p-4 rounded-lg shadow-lg">
-            <Text className="text-lg font-bold text-center">
-              {selectedPlace.name}
-            </Text>
-            <Text className="text-gray-500 text-sm text-center">
-              {selectedPlace.type}
-            </Text>
-
-            <View className="flex-row justify-center items-center mt-2 gap-6">
-              <View className="flex-row items-center gap-1">
-                <Text className="text-sm">42</Text>
+          <View style={styles.infoContainer}>
+            <Text style={styles.infoText}>{selectedPlace.name}</Text>
+            <Text style={styles.infoText}>{selectedPlace.type}</Text>
+            <View style={styles.voteContainer}>
+              <View style={styles.voteButtonContainer}>
+                <Text style={styles.voteCount}>42</Text>
                 <TouchableOpacity
                   onPress={() => {
                     console.log("UP");
@@ -113,9 +114,8 @@ const HomeScreen = () => {
                   />
                 </TouchableOpacity>
               </View>
-
-              <View className="flex-row items-center gap-1">
-                <Text className="text-sm">5</Text>
+              <View style={styles.voteButtonContainer}>
+                <Text style={styles.voteCount}>5</Text>
                 <TouchableOpacity
                   onPress={() => {
                     console.log("DOWN");
@@ -135,6 +135,43 @@ const HomeScreen = () => {
       </View>
     </>
   );
+};
+
+const styles = {
+  infoContainer: {
+    position: "absolute",
+    bottom: 20,
+    left: 20,
+    right: 20,
+    backgroundColor: "white",
+    padding: 10,
+    borderRadius: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+    elevation: 5,
+  },
+  infoText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  voteContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 8,
+    gap: 24,
+  },
+  voteButtonContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  voteCount: {
+    fontSize: 14,
+  },
 };
 
 export default HomeScreen;
