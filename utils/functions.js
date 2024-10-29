@@ -1,20 +1,18 @@
 // Fonction pour déterminer la couleur selon le type de lieu
 const getColorByType = (type) => {
   switch (type) {
-    case "Monument Historique":
+    case "Tourism":
       return "red";
-    case "Musée":
+    case "Museum":
       return "blue";
-    case "Parc d'Attractions":
+    case "Cinema":
       return "yellow";
-    case "Zoo":
+    case "Theater":
       return "green";
-    case "Parc Naturel":
+    case "Park":
       return "brown";
-    case "Aquarium":
+    case "Education":
       return "aqua";
-    case "Stade":
-      return "orange";
     default:
       return "gray"; // Couleur par défaut
   }

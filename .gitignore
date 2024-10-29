@@ -13,6 +13,7 @@ web-build/
 expo-env.d.ts
 
 /data/admin-key.json
+/data/places.json
 
 # firebase/supabase/vexo
 .env

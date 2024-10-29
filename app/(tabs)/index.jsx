@@ -157,6 +157,10 @@ const HomeScreen = () => {
           onPress={() => {
             setSelectedPlace(null);
           }}
+          showsIndoors={false}
+          showsTraffic={false}
+          toolbarEnabled={false}
+          moveOnMarkerPress={false}
           onTouchStart={handleMapPress}
           showsMyLocationButton={true}
           showsPointsOfInterest={false}
