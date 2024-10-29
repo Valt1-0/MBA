@@ -31,7 +31,8 @@ const HomeScreen = () => {
   const mapRef = useRef(null);
   const [followUser, setFollowUser] = useState(true);
   const [panelOpen, setPanelOpen] = useState(false);
-
+  const [openAtHalf, setOpenAtHalf] = useState(false);
+  
   useEffect(() => {
     const fetchPlaces = async () => {
       const placesCollection = collection(db, "places");
@@ -107,6 +108,7 @@ const HomeScreen = () => {
 
   const handleMarkerPress = (place) => {
     setSelectedPlace(place);
+     setOpenAtHalf(true);
   };
   const handleMapPress = () => {
     console.log("Map pressed");
@@ -184,7 +186,7 @@ const HomeScreen = () => {
             </Marker>
           ))}
         </MapView>
-        {Platform.OS === "ios" && !followUser &&(
+        {Platform.OS === "ios" && !followUser && (
           <TouchableOpacity
             style={styles.myLocationButton}
             onPress={handleMyLocationPress}
@@ -198,6 +200,7 @@ const HomeScreen = () => {
             markerData: selectedPlace,
           }}
           onPanelToggle={setPanelOpen}
+          openAtHalf={openAtHalf}
         />
       </View>
     </GestureHandlerRootView>
