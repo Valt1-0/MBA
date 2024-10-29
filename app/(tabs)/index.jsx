@@ -1,5 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import { View, Text, TouchableOpacity, Alert, Platform } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Alert,
+  Platform,
+  StyleSheet,
+} from "react-native";
 import MapView, {
   Callout,
   Marker,
@@ -22,6 +29,7 @@ const HomeScreen = () => {
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [city, setCity] = useState(null);
   const mapRef = useRef(null);
+  const [followUser, setFollowUser] = useState(true);
   const [panelOpen, setPanelOpen] = useState(false);
 
   useEffect(() => {
@@ -46,7 +54,9 @@ const HomeScreen = () => {
         return;
       }
 
-      let userLocation = await Location.getLastKnownPositionAsync({});
+      let userLocation = await Location.getLastKnownPositionAsync({
+        maxAge: 300000,
+      });
 
       if (!userLocation) {
         userLocation = await Location.getCurrentPositionAsync({});
@@ -60,6 +70,7 @@ const HomeScreen = () => {
       };
 
       if (mapRef.current) {
+        setFollowUser(false);
         mapRef.current.animateCamera(
           {
             altitude: 2000,
@@ -68,6 +79,7 @@ const HomeScreen = () => {
           },
           { duration: 350 }
         );
+        setFollowUser(true);
       }
 
       const reverseGeocode = async (latitude, longitude) => {
@@ -96,6 +108,40 @@ const HomeScreen = () => {
   const handleMarkerPress = (place) => {
     setSelectedPlace(place);
   };
+  const handleMapPress = () => {
+    console.log("Map pressed");
+    setFollowUser(false); // Désactivez le suivi de l'utilisateur lors de l'interaction avec la carte
+  };
+
+  const handleMyLocationPress = async () => {
+    let userLocation = await Location.getLastKnownPositionAsync({
+      maxAge: 300000,
+    });
+
+    if (!userLocation) {
+      userLocation = await Location.getCurrentPositionAsync({});
+    }
+
+    const userCoords = {
+      latitude: userLocation.coords.latitude,
+      longitude: userLocation.coords.longitude,
+      latitudeDelta: 0.38,
+      longitudeDelta: 0.28,
+    };
+
+    if (mapRef.current) {
+      setFollowUser(false);
+      mapRef.current.animateCamera(
+        {
+          altitude: 2000,
+          center: userCoords,
+          zoom: Platform.OS === "ios" ? 0 : 19,
+        },
+        { duration: 350 }
+      );
+      setFollowUser(true);
+    }
+  };
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -104,9 +150,13 @@ const HomeScreen = () => {
         <MapView
           ref={mapRef}
           style={{ width: "100%", height: "100%" }}
-          followsUserLocation={true}
+          followsUserLocation={followUser}
           showsUserLocation={true}
-          onPress={() => setSelectedPlace(null)}
+          onPress={() => {
+            setSelectedPlace(null);
+          }}
+          onTouchStart={handleMapPress}
+          showsMyLocationButton={true}
           showsPointsOfInterest={false}
           provider={
             Platform.OS === "android" ? PROVIDER_GOOGLE : PROVIDER_DEFAULT
@@ -134,6 +184,14 @@ const HomeScreen = () => {
             </Marker>
           ))}
         </MapView>
+        {Platform.OS === "ios" && !followUser &&(
+          <TouchableOpacity
+            style={styles.myLocationButton}
+            onPress={handleMyLocationPress}
+          >
+            <FontAwesome name="location-arrow" size={24} color="white" />
+          </TouchableOpacity>
+        )}
         <SwipeUp
           props={{
             city: city,
@@ -145,5 +203,19 @@ const HomeScreen = () => {
     </GestureHandlerRootView>
   );
 };
-
+const styles = StyleSheet.create({
+  myLocationButton: {
+    position: "absolute",
+    bottom: 80,
+    right: 20,
+    backgroundColor: "#007AFF",
+    borderRadius: 50,
+    padding: 10,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.8,
+    shadowRadius: 2,
+  },
+});
 export default HomeScreen;
