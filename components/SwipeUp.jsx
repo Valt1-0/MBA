@@ -63,9 +63,9 @@ const SwipeUp = ({ props, onPanelToggle }) => {
       >
         <Animated.View
           style={[animatedStyle, { height }]}
-          className="absolute bottom-6 w-full bg-white rounded-t-3xl p-4"
+          className="absolute bottom-20 w-full bg-white rounded-t-3xl p-4"
         >
-          <View className="h-1 w-20 bg-gray-300 rounded-full self-center mb-4 top-2" />
+          <View className="h-1 w-20 bg-gray-300 rounded-full self-center mb-2 top-1" />
           {markerData ? (
             <>
               <Text className="text-gray-500 text-center">

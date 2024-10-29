@@ -66,7 +66,7 @@ const HomeScreen = () => {
             center: userCoords,
             zoom: Platform.OS === "ios" ? 0 : 19,
           },
-          { duration: 500 }
+          { duration: 350 }
         );
       }
 
@@ -140,10 +140,6 @@ const HomeScreen = () => {
             markerData: selectedPlace,
           }}
           onPanelToggle={setPanelOpen}
-          style={{
-            position: "absolute",
-            bottom: 80, // Ajuste cette valeur pour que SwipeUp soit bien au-dessus du tab
-          }}
         />
       </View>
     </GestureHandlerRootView>
