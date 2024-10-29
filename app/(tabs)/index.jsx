@@ -24,13 +24,13 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import SwipeUp from "../../components/SwipeUp";
 
 const HomeScreen = () => {
-  const [places, setPlaces] = useState([]); 
+  const [places, setPlaces] = useState([]);
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [city, setCity] = useState(null);
   const mapRef = useRef(null);
   const [followUser, setFollowUser] = useState(true);
   const [panelOpen, setPanelOpen] = useState(false);
-  const [parentHeight, setParentHeight] = useState(0);  
+  const [parentHeight, setParentHeight] = useState(0);
 
   useEffect(() => {
     const fetchPlaces = async () => {
@@ -107,7 +107,7 @@ const HomeScreen = () => {
 
   const handleMarkerPress = (place) => {
     setSelectedPlace(place);
-     setPanelOpen(true);
+    setPanelOpen(true);
   };
   const handleMapPress = () => {
     console.log("Map pressed");
