@@ -86,11 +86,7 @@ const HomeScreen = () => {
   const handleMarkerPress = (place) => {
     setSelectedPlace(place);
   };
-    const handlePoiClick = (event) => {
-      const { coordinate, placeId, name } = event.nativeEvent;
-      console.log("POI clicked:", { coordinate, placeId, name });
-      // Vous pouvez utiliser ces informations pour afficher des détails ou effectuer d'autres actions
-    };
+ 
 
 
   return (
@@ -102,9 +98,8 @@ const HomeScreen = () => {
           style={{ width: "100%", height: "100%" }}
           followsUserLocation={true}
           showsUserLocation={true}
-          onPress={() => setSelectedPlace(null)}
-          onPoiClick={handlePoiClick}
-          showsPointsOfInterest={true}
+          onPress={() => setSelectedPlace(null)} 
+          showsPointsOfInterest={false}
           provider={
             Platform.OS === "android" ? PROVIDER_GOOGLE : PROVIDER_DEFAULT
           }
