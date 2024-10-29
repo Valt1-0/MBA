@@ -151,7 +151,6 @@ const HomeScreen = () => {
         className={"flex-1 h-full"}
         onLayout={(event) => {
           const { height } = event.nativeEvent.layout;
-          console.log("Parent height:", height);
           setParentHeight(height);
         }}
       >
