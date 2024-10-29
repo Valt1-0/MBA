@@ -49,7 +49,6 @@ const HomeScreen = () => {
         longitudeDelta: 0.28,
       };
 
-      // Reverse Geocoding to get the city name
       const reverseGeocode = async (latitude, longitude) => {
         const geocoded = await Location.reverseGeocodeAsync({
           latitude,
@@ -64,7 +63,7 @@ const HomeScreen = () => {
       );
 
       if (locationDetails.length > 0) {
-        const { city } = locationDetails[0]; // Get the city from the result
+        const { city } = locationDetails[0];
         setCity(city);
         console.log("Nearest city:", city);
       } else {
@@ -127,6 +126,10 @@ const HomeScreen = () => {
             markerData: selectedPlace,
           }}
           onPanelToggle={setPanelOpen}
+          style={{
+            position: "absolute",
+            bottom: 80, // Ajuste cette valeur pour que SwipeUp soit bien au-dessus du tab
+          }}
         />
       </View>
     </GestureHandlerRootView>
