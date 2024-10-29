@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, Text, TouchableOpacity, Alert, Platform } from "react-native";
-import MapView, { Callout, Marker } from "react-native-maps";
+import MapView, { Callout, Marker,PROVIDER_GOOGLE,PROVIDER_DEFAULT } from "react-native-maps";
 import * as Location from "expo-location";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome, Entypo } from "@expo/vector-icons";
@@ -87,6 +87,12 @@ const HomeScreen = () => {
   const handleMarkerPress = (place) => {
     setSelectedPlace(place);
   };
+    const handlePoiClick = (event) => {
+      const { coordinate, placeId, name } = event.nativeEvent;
+      console.log("POI clicked:", { coordinate, placeId, name });
+      // Vous pouvez utiliser ces informations pour afficher des détails ou effectuer d'autres actions
+    };
+
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -98,6 +104,11 @@ const HomeScreen = () => {
           followsUserLocation={true}
           showsUserLocation={true}
           onPress={() => setSelectedPlace(null)}
+          onPoiClick={handlePoiClick}
+          showsPointsOfInterest={true}
+          provider={
+            Platform.OS === "android" ? PROVIDER_GOOGLE : PROVIDER_DEFAULT
+          }
         >
           {places.map((place) => (
             <Marker
