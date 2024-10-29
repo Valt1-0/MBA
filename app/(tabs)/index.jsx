@@ -31,8 +31,8 @@ const HomeScreen = () => {
   const mapRef = useRef(null);
   const [followUser, setFollowUser] = useState(true);
   const [panelOpen, setPanelOpen] = useState(false);
-  const [openAtHalf, setOpenAtHalf] = useState(false);
-  
+  const [parentHeight, setParentHeight] = useState(0);  
+
   useEffect(() => {
     const fetchPlaces = async () => {
       const placesCollection = collection(db, "places");
@@ -108,7 +108,7 @@ const HomeScreen = () => {
 
   const handleMarkerPress = (place) => {
     setSelectedPlace(place);
-     setOpenAtHalf(true);
+     setPanelOpen(true);
   };
   const handleMapPress = () => {
     console.log("Map pressed");
@@ -148,7 +148,14 @@ const HomeScreen = () => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar hidden={true} />
-      <View style={{ flex: 1 }}>
+      <View
+        className={"flex-1 h-full"}
+        onLayout={(event) => {
+          const { height } = event.nativeEvent.layout;
+          console.log("Parent height:", height);
+          setParentHeight(height);
+        }}
+      >
         <MapView
           ref={mapRef}
           style={{ width: "100%", height: "100%" }}
@@ -200,7 +207,8 @@ const HomeScreen = () => {
             markerData: selectedPlace,
           }}
           onPanelToggle={setPanelOpen}
-          openAtHalf={openAtHalf}
+          openAtHalf={panelOpen}
+          parentHeight={parentHeight}
         />
       </View>
     </GestureHandlerRootView>
