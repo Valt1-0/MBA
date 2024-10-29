@@ -19,7 +19,7 @@ const SwipeUp = ({ props, onPanelToggle, openAtHalf }) => {
   const insets = useSafeAreaInsets();
   const { markerData, city } = props;
 
-  const height = frame.height - insets.bottom  ; // Hauteur du panneau
+  const height = frame.height - insets.bottom; // Hauteur du panneau
   const translateY = useSharedValue(height); // Le panneau commence en bas de l'écran
   const startY = useSharedValue(0); // Position de départ du geste
   const [isFullyOpen, setIsFullyOpen] = useState(false);
