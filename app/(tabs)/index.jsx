@@ -1,6 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, Text, TouchableOpacity, Alert, Platform } from "react-native";
-import MapView, { Callout, Marker,PROVIDER_GOOGLE,PROVIDER_DEFAULT } from "react-native-maps";
+import MapView, {
+  Callout,
+  Marker,
+  PROVIDER_GOOGLE,
+  PROVIDER_DEFAULT,
+} from "react-native-maps";
 import * as Location from "expo-location";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome, Entypo } from "@expo/vector-icons";
@@ -77,7 +82,7 @@ const HomeScreen = () => {
             center: userCoords,
             zoom: Platform.OS === "ios" ? 0 : 19,
           },
-          { duration: 500 }
+          { duration: "350" }
         );
       }
     })();
@@ -86,8 +91,6 @@ const HomeScreen = () => {
   const handleMarkerPress = (place) => {
     setSelectedPlace(place);
   };
- 
-
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -98,7 +101,7 @@ const HomeScreen = () => {
           style={{ width: "100%", height: "100%" }}
           followsUserLocation={true}
           showsUserLocation={true}
-          onPress={() => setSelectedPlace(null)} 
+          onPress={() => setSelectedPlace(null)}
           showsPointsOfInterest={false}
           provider={
             Platform.OS === "android" ? PROVIDER_GOOGLE : PROVIDER_DEFAULT
@@ -132,10 +135,6 @@ const HomeScreen = () => {
             markerData: selectedPlace,
           }}
           onPanelToggle={setPanelOpen}
-          style={{
-            position: "absolute",
-            bottom: 80, // Ajuste cette valeur pour que SwipeUp soit bien au-dessus du tab
-          }}
         />
       </View>
     </GestureHandlerRootView>
