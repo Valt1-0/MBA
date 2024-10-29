@@ -1,6 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
 import { View, Text, TouchableOpacity, Alert, Platform } from "react-native";
-import MapView, { Callout, Marker,PROVIDER_GOOGLE,PROVIDER_DEFAULT } from "react-native-maps";
+import MapView, {
+  Callout,
+  Marker,
+  PROVIDER_GOOGLE,
+  PROVIDER_DEFAULT,
+} from "react-native-maps";
 import * as Location from "expo-location";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome, Entypo } from "@expo/vector-icons";
@@ -41,13 +46,29 @@ const HomeScreen = () => {
         return;
       }
 
-      let userLocation = await Location.getCurrentPositionAsync({});
+      let userLocation = await Location.getLastKnownPositionAsync({});
+
+      if (!userLocation) {
+        userLocation = await Location.getCurrentPositionAsync({});
+      }
+
       const userCoords = {
         latitude: userLocation.coords.latitude,
         longitude: userLocation.coords.longitude,
         latitudeDelta: 0.38,
         longitudeDelta: 0.28,
       };
+
+      if (mapRef.current) {
+        mapRef.current.animateCamera(
+          {
+            altitude: 2000,
+            center: userCoords,
+            zoom: Platform.OS === "ios" ? 0 : 19,
+          },
+          { duration: 500 }
+        );
+      }
 
       const reverseGeocode = async (latitude, longitude) => {
         const geocoded = await Location.reverseGeocodeAsync({
@@ -69,25 +90,12 @@ const HomeScreen = () => {
       } else {
         console.log("No city found for these coordinates.");
       }
-
-      if (mapRef.current) {
-        mapRef.current.animateCamera(
-          {
-            altitude: 2000,
-            center: userCoords,
-            zoom: Platform.OS === "ios" ? 0 : 19,
-          },
-          { duration: 500 }
-        );
-      }
     })();
   }, []);
 
   const handleMarkerPress = (place) => {
     setSelectedPlace(place);
   };
- 
-
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -98,7 +106,7 @@ const HomeScreen = () => {
           style={{ width: "100%", height: "100%" }}
           followsUserLocation={true}
           showsUserLocation={true}
-          onPress={() => setSelectedPlace(null)} 
+          onPress={() => setSelectedPlace(null)}
           showsPointsOfInterest={false}
           provider={
             Platform.OS === "android" ? PROVIDER_GOOGLE : PROVIDER_DEFAULT
