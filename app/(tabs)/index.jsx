@@ -24,8 +24,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import SwipeUp from "../../components/SwipeUp";
 
 const HomeScreen = () => {
-  const [places, setPlaces] = useState([]);
-  const [activeButton, setActiveButton] = useState(null);
+  const [places, setPlaces] = useState([]); 
   const [selectedPlace, setSelectedPlace] = useState(null);
   const [city, setCity] = useState(null);
   const mapRef = useRef(null);
