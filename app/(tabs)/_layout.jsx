@@ -1,11 +1,15 @@
-import { Link, Tabs } from "expo-router";
+import { Tabs, useNavigation } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import "../../global.css";
 import { UserContext } from "../../context/UserContext";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
+import { useNavigationState } from "@react-navigation/native";
 
 export default function TabLayout() {
- const userInfo = useContext(UserContext);
+  const { userInfo } = useContext(UserContext);
+  const navigation = useNavigation();
+  const state = useNavigationState((state) => state);
+
 
   return (
     <Tabs
@@ -18,12 +22,13 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
+          href: "/",
           headerShown: false,
-          title: "Home",
+          title: "Découvrir",
           tabBarIcon: ({ focused }) => (
             <Ionicons
-              name="home"
-              size={24}
+              name="navigate-circle-outline"
+              size={35}
               color={focused ? "#DDC97A" : "gray"}
             />
           ),
