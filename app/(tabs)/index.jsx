@@ -33,6 +33,7 @@ import { customMapStyle } from "../../utils/customMap";
 import * as NavigationBar from "expo-navigation-bar";
 import { geohashQueryBounds, distanceBetween } from "geofire-common";
 import { useFocusEffect } from "expo-router";
+import RangeSlider from "../../components/Slider";
 
 const HomeScreen = () => {
   const [places, setPlaces] = useState([]);
@@ -275,6 +276,8 @@ const HomeScreen = () => {
             <FontAwesome name="location-arrow" size={24} color="white" />
           </TouchableOpacity>
         )}
+        <RangeSlider />
+
         <SwipeUp
           onPanelToggle={setPanelOpen}
           openAtHalf={panelOpen}
