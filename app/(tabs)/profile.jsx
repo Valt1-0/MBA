@@ -25,7 +25,6 @@ export default function Profile() {
   const router = useRouter();
 
   useEffect(() => {
-    console.log("Update");
     if (!userInfo?.isAuthenticated) {
       router.replace("/auth");
     }
