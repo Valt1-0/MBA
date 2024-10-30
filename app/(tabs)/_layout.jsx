@@ -1,5 +1,5 @@
 import { Tabs, useNavigation } from "expo-router";
-import { Ionicons } from "@expo/vector-icons";
+import { FontAwesome6, Ionicons } from "@expo/vector-icons";
 import "../../global.css";
 import { UserContext } from "../../context/UserContext";
 import { useContext, useEffect } from "react";
@@ -9,7 +9,6 @@ export default function TabLayout() {
   const { userInfo } = useContext(UserContext);
   const navigation = useNavigation();
   const state = useNavigationState((state) => state);
-
 
   return (
     <Tabs
@@ -28,7 +27,7 @@ export default function TabLayout() {
           tabBarIcon: ({ focused }) => (
             <Ionicons
               name="navigate-circle-outline"
-              size={35}
+              size={29}
               color={focused ? "#DDC97A" : "gray"}
             />
           ),
@@ -58,6 +57,19 @@ export default function TabLayout() {
           tabBarIcon: ({ focused }) => (
             <Ionicons
               name="log-in"
+              size={24}
+              color={focused ? "#DDC97A" : "gray"}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="test"
+        options={{
+          headerShown: false,
+          tabBarIcon: ({ focused }) => (
+            <FontAwesome6
+              name="dev"
               size={24}
               color={focused ? "#DDC97A" : "gray"}
             />

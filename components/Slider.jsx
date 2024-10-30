@@ -1,46 +1,39 @@
-import React, { useState } from "react";
-import { View, Text } from "react-native";
-import Slider from "@react-native-community/slider";
-import { tw } from "nativewind";
+import React, { useRef } from "react";
+import { View, TouchableWithoutFeedback, Animated } from "react-native";
+import { FontAwesome6 } from "@expo/vector-icons";
 
 const RangeSlider = () => {
-  const [minValue, setMinValue] = useState(0);
-  const [maxValue, setMaxValue] = useState(100);
-  const [range, setRange] = useState([minValue, maxValue]);
+  const animation = useRef(new Animated.Value(1)).current; // Animation pour contrôler l'échelle
 
-  const handleMinValueChange = (value) => {
-    setRange([value, range[1]]);
+  const expandView = () => {
+    Animated.timing(animation, {
+      toValue: 1.5, // Élargir à 150% de la taille d'origine
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
   };
 
-  const handleMaxValueChange = (value) => {
-    setRange([range[0], value]);
+  const collapseView = () => {
+    Animated.timing(animation, {
+      toValue: 1, // Rétrécir à la taille d'origine
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
   };
 
   return (
-    <View style={tw`p-4`}>
-      <Text style={tw`mb-2 text-lg font-bold`}>Range Slider</Text>
-      <Text style={tw`mb-2`}>Min Value: {range[0]}</Text>
-      <Text style={tw`mb-2`}>Max Value: {range[1]}</Text>
-      <Slider
-        style={tw`mb-4`}
-        minimumValue={minValue}
-        maximumValue={maxValue}
-        value={range[0]}
-        onValueChange={handleMinValueChange}
-        minimumTrackTintColor="#DDC97A"
-        maximumTrackTintColor="#000000"
-        thumbTintColor="#DDC97A"
-      />
-      <Slider
-        style={tw`mb-4`}
-        minimumValue={minValue}
-        maximumValue={maxValue}
-        value={range[1]}
-        onValueChange={handleMaxValueChange}
-        minimumTrackTintColor="#DDC97A"
-        maximumTrackTintColor="#000000"
-        thumbTintColor="#DDC97A"
-      />
+    <View className="bg-slate-600 flex items-center justify-center h-full">
+      {/* Zone qui sera élargie */}
+      <TouchableWithoutFeedback onPress={expandView} onLongPress={collapseView}>
+        <Animated.View
+          style={{
+            transform: [{ scale: animation }], // Appliquer la transformation d'échelle
+          }}
+          className="w-14 h-14 bg-white border border-slate-300 rounded-3xl flex items-center justify-center"
+        >
+          <FontAwesome6 name="ruler" size={25} color="#777777" />
+        </Animated.View>
+      </TouchableWithoutFeedback>
     </View>
   );
 };
