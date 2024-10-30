@@ -15,13 +15,14 @@ import MapView, {
 } from "react-native-maps";
 import * as Location from "expo-location";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { FontAwesome, Entypo } from "@expo/vector-icons";
+import { FontAwesome, Entypo, FontAwesome6 } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
-import { getColorByType } from "../../utils/functions";
+import { getColorByType, getIconByType } from "../../utils/functions";
 import { db } from "../../utils/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import SwipeUp from "../../components/SwipeUp";
+import { customMapStyle } from "../../utils/customMap";
 
 const HomeScreen = () => {
   const [places, setPlaces] = useState([]);
@@ -42,6 +43,7 @@ const HomeScreen = () => {
       }));
       setPlaces(placesList);
     };
+    console.log("Fetching places...");
 
     fetchPlaces();
   }, []);
@@ -157,6 +159,7 @@ const HomeScreen = () => {
       >
         <MapView
           ref={mapRef}
+          customMapStyle={customMapStyle}
           style={{ width: "100%", height: "100%" }}
           followsUserLocation={followUser}
           showsUserLocation={true}
@@ -177,6 +180,7 @@ const HomeScreen = () => {
           {places.map((place) => (
             <Marker
               key={place.id}
+              tracksViewChanges = {false}
               coordinate={{
                 latitude: place.latitude,
                 longitude: place.longitude,
@@ -187,10 +191,10 @@ const HomeScreen = () => {
               }}
             >
               <TouchableOpacity>
-                <FontAwesome
-                  name="map-pin"
-                  size={25}
-                  color={getColorByType(place.type)}
+                <FontAwesome6
+                  name={getIconByType(place.type)}
+                  size={20}
+                  color="#FF0000AA"
                 />
               </TouchableOpacity>
             </Marker>
