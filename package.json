@@ -27,6 +27,7 @@
     "expo-web-browser": "~13.0.3",
     "firebase": "^10.5.2",
     "firebase-admin": "^12.6.0",
+    "geofire-common": "^6.0.0",
     "lottie-react-native": "^7.0.0",
     "nativewind": "next",
     "react": "18.2.0",

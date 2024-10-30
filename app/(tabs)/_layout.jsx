@@ -7,7 +7,6 @@ import { useContext } from "react";
 export default function TabLayout() {
  const userInfo = useContext(UserContext);
 
- console.log("userInfo", userInfo);
   return (
     <Tabs
       initialRouteName="index"
