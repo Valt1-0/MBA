@@ -19,10 +19,12 @@ import { FontAwesome, Entypo, FontAwesome6 } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { getColorByType, getIconByType } from "../../utils/functions";
 import { db } from "../../utils/firebase";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs,query ,orderBy,startAt,endAt} from "firebase/firestore";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import SwipeUp from "../../components/SwipeUp";
 import { customMapStyle } from "../../utils/customMap";
+import { geohashQueryBounds, distanceBetween } from "geofire-common";
+
 
 const HomeScreen = () => {
   const [places, setPlaces] = useState([]);
@@ -32,21 +34,67 @@ const HomeScreen = () => {
   const [followUser, setFollowUser] = useState(true);
   const [panelOpen, setPanelOpen] = useState(false);
   const [parentHeight, setParentHeight] = useState(0);
+ 
+async function queryNearbyPlaces(center, radiusInM) {
+  const bounds = geohashQueryBounds(center, radiusInM);
+  const promises = [];
+  for (const b of bounds) {
+    const q = query(
+      collection(db, "places"),
+      orderBy("geohash"),
+      startAt(b[0]),
+      endAt(b[1])
+    );
 
-  useEffect(() => {
-    const fetchPlaces = async () => {
-      const placesCollection = collection(db, "places");
-      const placesSnapshot = await getDocs(placesCollection);
-      const placesList = placesSnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setPlaces(placesList);
-    };
-    console.log("Fetching places...");
+    promises.push(getDocs(q));
+  }
 
-    fetchPlaces();
-  }, []);
+  const snapshots = await Promise.all(promises);
+
+  const matchingDocs = [];
+
+  for (const snap of snapshots) {
+    for (const doc of snap.docs) {
+      const lat = doc.get("location").latitude;
+      const lng = doc.get("location").longitude;
+
+      // We have to filter out a few false positives due to GeoHash accuracy, but most will match
+      const distanceInKm = distanceBetween([lat, lng], center);
+      const distanceInM = distanceInKm * 1000;
+      if (distanceInM <= radiusInM) {
+        matchingDocs.push(doc);
+      }
+    }
+  }
+
+  return matchingDocs;
+}
+ 
+
+
+
+
+
+
+
+
+
+
+
+  // useEffect(() => {
+  //   const fetchPlaces = async () => {
+  //     const placesCollection = collection(db, "places");
+  //     const placesSnapshot = await getDocs(placesCollection);
+  //     const placesList = placesSnapshot.docs.map((doc) => ({
+  //       id: doc.id,
+  //       ...doc.data(),
+  //     }));
+  //     setPlaces(placesList);
+  //   };
+  //   console.log("Fetching places...");
+
+  //   fetchPlaces();
+  // }, []);
 
   useEffect(() => {
     (async () => {
@@ -70,6 +118,17 @@ const HomeScreen = () => {
         latitudeDelta: 0.38,
         longitudeDelta: 0.28,
       };
+
+      const center = [userCoords.latitude, userCoords.longitude];
+      const radiusInM = 1000; // Rayon en mètres
+
+         queryNearbyPlaces(center, radiusInM).then((docs) => {
+           const placesData = docs.map((doc) => ({
+             id: doc.id,
+             ...doc.data(),
+           }));
+           setPlaces(placesData);
+         });
 
       if (mapRef.current) {
         setFollowUser(false);
@@ -111,8 +170,7 @@ const HomeScreen = () => {
     setSelectedPlace(place);
     setPanelOpen(true);
   };
-  const handleMapPress = () => {
-    console.log("Map pressed");
+  const handleMapPress = () => { 
     setFollowUser(false); // Désactivez le suivi de l'utilisateur lors de l'interaction avec la carte
   };
 
