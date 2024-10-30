@@ -93,7 +93,7 @@ const HomeScreen = () => {
   // }, []);
 
   useEffect(() => {
-    NavigationBar.setBackgroundColorAsync("#000000");
+    NavigationBar.setBackgroundColorAsync("white");
   }, []);
 
   useEffect(() => {
