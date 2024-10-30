@@ -32,6 +32,8 @@ import SwipeUp from "../../components/SwipeUp";
 import { customMapStyle } from "../../utils/customMap";
 import * as NavigationBar from "expo-navigation-bar";
 import { geohashQueryBounds, distanceBetween } from "geofire-common";
+import { useFocusEffect } from "expo-router";
+
 
 const HomeScreen = () => {
   const [places, setPlaces] = useState([]);
@@ -39,7 +41,7 @@ const HomeScreen = () => {
   const [city, setCity] = useState(null);
   const mapRef = useRef(null);
   const [followUser, setFollowUser] = useState(true);
-  const [panelOpen, setPanelOpen] = useState(false);
+  const [panelOpen, setPanelOpen] = useState(true);
   const [parentHeight, setParentHeight] = useState(0);
 
   async function queryNearbyPlaces(center, radiusInM) {
@@ -74,8 +76,23 @@ const HomeScreen = () => {
       }
     }
 
-    return matchingDocs;
-  }
+  return matchingDocs;
+}
+ 
+
+
+
+useFocusEffect(() => { 
+
+setPanelOpen(true);
+
+});
+
+
+
+
+
+
 
   // useEffect(() => {
   //   const fetchPlaces = async () => {
@@ -266,14 +283,27 @@ const HomeScreen = () => {
           </TouchableOpacity>
         )}
         <SwipeUp
-          props={{
-            city: city,
-            markerData: selectedPlace,
-          }}
           onPanelToggle={setPanelOpen}
           openAtHalf={panelOpen}
           parentHeight={parentHeight}
-        />
+          positions={[10, 50, 100]} // Positions en pourcentage
+        >
+          <View className="h-1 w-20 bg-gray-300 rounded-full self-center mb-2 top-1"/>
+            {selectedPlace ? (
+              <>
+                <Text className="text-gray-500 text-center">
+                  {selectedPlace.name}
+                </Text>
+                <Text className="text-gray-500 text-center">
+                  {selectedPlace.description}
+                </Text>
+              </>
+            ) : (
+              <Text className="text-gray-700 font-semibold top-3 text-xl">
+                Nouveautés à {city}
+              </Text>
+            )}
+        </SwipeUp>
       </View>
     </GestureHandlerRootView>
   );

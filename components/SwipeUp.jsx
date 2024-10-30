@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   StyleSheet,
-  Dimensions,
 } from "react-native";
 import { PanGestureHandler } from "react-native-gesture-handler";
 import Animated, {
@@ -12,20 +10,18 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import {
-  useSafeAreaInsets,
-  useSafeAreaFrame,
-} from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
 import { FontAwesome } from "@expo/vector-icons";
 
-const SwipeUp = ({ props, onPanelToggle, openAtHalf, parentHeight }) => {
-  const frame = useSafeAreaFrame();
-  const insets = useSafeAreaInsets();
-  const { markerData, city } = props;
-
-  const translateY = useSharedValue(parentHeight); // Start at the bottom of the screen
-  const startY = useSharedValue(0); // Gesture start position
+const SwipeUp = ({
+  children,
+  onPanelToggle,
+  openAtHalf,
+  parentHeight,
+  positions,
+}) => {
+  const translateY = useSharedValue(parentHeight); // Le panneau commence en bas de l'écran
+  const startY = useSharedValue(0); // Position de départ du geste
   const [isFullyOpen, setIsFullyOpen] = useState(false);
 
   // Define the positions for min and max open
@@ -34,8 +30,14 @@ const SwipeUp = ({ props, onPanelToggle, openAtHalf, parentHeight }) => {
 
   useFocusEffect(
     React.useCallback(() => {
-      // Reset panel position when screen is focused
-      translateY.value = withTiming(minClosedPosition, { duration: 300 });
+      const positionValues = positions.map(
+        (pos) => parentHeight - (pos / 100) * parentHeight
+      );
+
+      // Réinitialiser la position du panneau lorsque l'écran est focalisé
+      translateY.value = withTiming(parentHeight - positionValues[0], {
+        duration: 300,
+      });
       setIsFullyOpen(false);
       if (onPanelToggle) onPanelToggle(false); // Notify panel is closed
     }, [translateY, parentHeight, onPanelToggle])
@@ -63,45 +65,32 @@ const SwipeUp = ({ props, onPanelToggle, openAtHalf, parentHeight }) => {
   };
 
   const onGestureEnd = (event) => {
-    const translationY = event.nativeEvent.translationY;
+    
+    const positionValues = positions.map(
+      (pos) => parentHeight - (pos / 100) * parentHeight
+    );
 
-    if (translationY > 0) {
-      // Gesture downwards
-      if (translateY.value > parentHeight * 0.75) {
-        // Snap to minClosedPosition when moving beyond 75%
-        translateY.value = withTiming(minClosedPosition, { duration: 300 });
-        setIsFullyOpen(false);
-        openAtHalf = false;
-        if (onPanelToggle) onPanelToggle(false); // Notify panel is closed
-      } else if (translateY.value > parentHeight * 0.25) {
-        // Open panel to 50% if moved between 25% and 75%
-        translateY.value = withTiming(parentHeight * 0.5, { duration: 300 });
-        setIsFullyOpen(false);
-        if (onPanelToggle) onPanelToggle(true); // Notify panel is open at 50%
-      } else {
-        // Open panel to 80% if moved to less than 25% height
-        translateY.value = withTiming(maxOpenPosition, { duration: 300 });
-        setIsFullyOpen(true);
-        if (onPanelToggle) onPanelToggle(true); // Notify panel is fully open
+    // Trouver la position la plus proche
+    let closestPosition = positionValues[0];
+    let minDistance = Math.abs(translateY.value - closestPosition);
+
+    for (let i = 1; i < positionValues.length; i++) {
+      const distance = Math.abs(translateY.value - positionValues[i]);
+      if (distance < minDistance) {
+        closestPosition = positionValues[i];
+        minDistance = distance;
       }
+    }
+    // Définir la position finale
+    translateY.value = withTiming(closestPosition, { duration: 300 });
+
+    // Mettre à jour l'état en fonction de la position finale
+    if (closestPosition === 0) {
+      setIsFullyOpen(true);
+      if (onPanelToggle) onPanelToggle(true); // Indiquer que le panneau est ouvert à 100%
     } else {
-      // Gesture upwards
-      if (translateY.value < parentHeight * 0.25) {
-        // Open panel to 80% if moved to less than 25% height
-        translateY.value = withTiming(maxOpenPosition, { duration: 300 });
-        setIsFullyOpen(true);
-        if (onPanelToggle) onPanelToggle(true); // Notify panel is fully open
-      } else if (translateY.value < parentHeight * 0.75) {
-        // Open panel to 50% if moved between 25% and 75%
-        translateY.value = withTiming(parentHeight * 0.5, { duration: 300 });
-        setIsFullyOpen(false);
-        if (onPanelToggle) onPanelToggle(true); // Notify panel is open at 50%
-      } else {
-        // Close panel to minClosedPosition if moved beyond 75%
-        translateY.value = withTiming(minClosedPosition, { duration: 300 });
-        setIsFullyOpen(false);
-        if (onPanelToggle) onPanelToggle(false); // Notify panel is closed
-      }
+      setIsFullyOpen(false);
+      if (onPanelToggle) onPanelToggle(true); // Indiquer que le panneau est ouvert à une position intermédiaire
     }
   };
 
@@ -110,13 +99,13 @@ const SwipeUp = ({ props, onPanelToggle, openAtHalf, parentHeight }) => {
   }));
 
   const handleClose = () => {
-    translateY.value = withTiming(minClosedPosition, { duration: 300 });
+    translateY.value = withTiming(parentHeight, { duration: 300 });
     setIsFullyOpen(false);
     if (onPanelToggle) onPanelToggle(false); // Notify panel is closed
   };
 
   return (
-    <View style={{ flex: 1, height: 10 }}>
+    <View style={{ flex: 1, height: "100%" }}>
       <PanGestureHandler
         onGestureEvent={onGestureEvent}
         onBegan={onGestureBegin}
@@ -127,21 +116,7 @@ const SwipeUp = ({ props, onPanelToggle, openAtHalf, parentHeight }) => {
           style={[animatedStyle, { height: parentHeight }]}
           className="absolute bottom-0 w-full bg-white rounded-t-3xl p-4"
         >
-          <View className="h-1 w-20 bg-gray-300 rounded-full self-center mb-4 top-1" />
-          {markerData ? (
-            <>
-              <Text className="text-gray-500 text-center">
-                {markerData.name}
-              </Text>
-              <Text className="text-gray-500 text-center">
-                {markerData.description}
-              </Text>
-            </>
-          ) : (
-            <Text className="text-gray-700 font-semibold top-3 text-xl">
-              {city}
-            </Text>
-          )}
+          {children}
           {isFullyOpen && (
             <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
               <FontAwesome name="times" size={24} color="white" />
