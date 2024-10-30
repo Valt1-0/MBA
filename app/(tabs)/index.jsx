@@ -77,7 +77,12 @@ const HomeScreen = () => {
 
     return matchingDocs;
   }
+    return matchingDocs;
+  }
 
+  useFocusEffect(() => {
+    setPanelOpen(true);
+  });
   useFocusEffect(() => {
     setPanelOpen(true);
   });
@@ -98,7 +103,9 @@ const HomeScreen = () => {
   // }, []);
 
   useEffect(() => {
-    NavigationBar.setBackgroundColorAsync("white");
+    if (Platform.OS === "android") {
+      NavigationBar.setBackgroundColorAsync("white");
+    }
   }, []);
 
   useEffect(() => {
