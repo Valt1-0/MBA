@@ -77,8 +77,6 @@ const HomeScreen = () => {
 
     return matchingDocs;
   }
-    return matchingDocs;
-  }
 
   useFocusEffect(() => {
     setPanelOpen(true);
