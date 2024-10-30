@@ -34,7 +34,6 @@ import * as NavigationBar from "expo-navigation-bar";
 import { geohashQueryBounds, distanceBetween } from "geofire-common";
 import { useFocusEffect } from "expo-router";
 
-
 const HomeScreen = () => {
   const [places, setPlaces] = useState([]);
   const [selectedPlace, setSelectedPlace] = useState(null);
@@ -76,23 +75,12 @@ const HomeScreen = () => {
       }
     }
 
-  return matchingDocs;
-}
- 
+    return matchingDocs;
+  }
 
-
-
-useFocusEffect(() => { 
-
-setPanelOpen(true);
-
-});
-
-
-
-
-
-
+  useFocusEffect(() => {
+    setPanelOpen(true);
+  });
 
   // useEffect(() => {
   //   const fetchPlaces = async () => {
@@ -110,7 +98,9 @@ setPanelOpen(true);
   // }, []);
 
   useEffect(() => {
-    NavigationBar.setBackgroundColorAsync("white");
+    if (Platform.OS === "android") {
+      NavigationBar.setBackgroundColorAsync("white");
+    }
   }, []);
 
   useEffect(() => {
@@ -288,21 +278,21 @@ setPanelOpen(true);
           parentHeight={parentHeight}
           positions={[10, 50, 100]} // Positions en pourcentage
         >
-          <View className="h-1 w-20 bg-gray-300 rounded-full self-center mb-2 top-1"/>
-            {selectedPlace ? (
-              <>
-                <Text className="text-gray-500 text-center">
-                  {selectedPlace.name}
-                </Text>
-                <Text className="text-gray-500 text-center">
-                  {selectedPlace.description}
-                </Text>
-              </>
-            ) : (
-              <Text className="text-gray-700 font-semibold top-3 text-xl">
-                Nouveautés à {city}
+          <View className="h-1 w-20 bg-gray-300 rounded-full self-center mb-2 top-1" />
+          {selectedPlace ? (
+            <>
+              <Text className="text-gray-500 text-center">
+                {selectedPlace.name}
               </Text>
-            )}
+              <Text className="text-gray-500 text-center">
+                {selectedPlace.description}
+              </Text>
+            </>
+          ) : (
+            <Text className="text-gray-700 font-semibold top-3 text-xl">
+              Nouveautés à {city}
+            </Text>
+          )}
         </SwipeUp>
       </View>
     </GestureHandlerRootView>
