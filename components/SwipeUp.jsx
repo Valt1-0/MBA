@@ -23,39 +23,42 @@ const SwipeUp = ({ props, onPanelToggle, openAtHalf, parentHeight }) => {
   const frame = useSafeAreaFrame();
   const insets = useSafeAreaInsets();
   const { markerData, city } = props;
-  console.log(Dimensions.get("window").height, frame.height, parentHeight);
-  const translateY = useSharedValue(parentHeight); // Le panneau commence en bas de l'écran
-  const startY = useSharedValue(0); // Position de départ du geste
+
+  const translateY = useSharedValue(parentHeight); // Start at the bottom of the screen
+  const startY = useSharedValue(0); // Gesture start position
   const [isFullyOpen, setIsFullyOpen] = useState(false);
+
+  // Define the positions for min and max open
+  const minClosedPosition = parentHeight - 35; // Position just above the tab bar
+  const maxOpenPosition = parentHeight * 0.1; // Maximum open position (80% screen height)
 
   useFocusEffect(
     React.useCallback(() => {
-      // Réinitialiser la position du panneau lorsque l'écran est focalisé
-      translateY.value = withTiming(parentHeight - 30, { duration: 300 });
+      // Reset panel position when screen is focused
+      translateY.value = withTiming(minClosedPosition, { duration: 300 });
       setIsFullyOpen(false);
-      if (onPanelToggle) onPanelToggle(false); // Indiquer que le panneau est fermé
+      if (onPanelToggle) onPanelToggle(false); // Notify panel is closed
     }, [translateY, parentHeight, onPanelToggle])
   );
 
   useEffect(() => {
-    console.log("openAtHalf", openAtHalf);
     if (openAtHalf) {
       translateY.value = withTiming(parentHeight * 0.5, { duration: 300 });
       setIsFullyOpen(false);
-      if (onPanelToggle) onPanelToggle(true); // Indiquer que le panneau est ouvert à 50%
+      if (onPanelToggle) onPanelToggle(true); // Notify panel is open at 50%
     }
   }, [openAtHalf, translateY, parentHeight, onPanelToggle]);
 
   const onGestureEvent = (event) => {
-    // Déplacement du panneau pendant le geste
+    // Move panel during gesture, clamping between minClosedPosition and maxOpenPosition
     translateY.value = Math.max(
-      0,
-      Math.min(parentHeight, startY.value + event.nativeEvent.translationY)
+      maxOpenPosition,
+      Math.min(minClosedPosition, startY.value + event.nativeEvent.translationY)
     );
   };
 
-  const onGestureBegin = (event) => {
-    // Enregistrer la position de départ du geste
+  const onGestureBegin = () => {
+    // Record gesture start position
     startY.value = translateY.value;
   };
 
@@ -63,41 +66,41 @@ const SwipeUp = ({ props, onPanelToggle, openAtHalf, parentHeight }) => {
     const translationY = event.nativeEvent.translationY;
 
     if (translationY > 0) {
-      // Geste vers le bas
+      // Gesture downwards
       if (translateY.value > parentHeight * 0.75) {
-        // Fermer le panneau si le déplacement est supérieur à 75% de la hauteur
-        translateY.value = withTiming(parentHeight, { duration: 300 });
+        // Snap to minClosedPosition when moving beyond 75%
+        translateY.value = withTiming(minClosedPosition, { duration: 300 });
         setIsFullyOpen(false);
         openAtHalf = false;
-        if (onPanelToggle) onPanelToggle(false); // Indiquer que le panneau est fermé
+        if (onPanelToggle) onPanelToggle(false); // Notify panel is closed
       } else if (translateY.value > parentHeight * 0.25) {
-        // Ouvrir le panneau à 50% si le déplacement est entre 25% et 75% de la hauteur
+        // Open panel to 50% if moved between 25% and 75%
         translateY.value = withTiming(parentHeight * 0.5, { duration: 300 });
         setIsFullyOpen(false);
-        if (onPanelToggle) onPanelToggle(true); // Indiquer que le panneau est ouvert à 50%
+        if (onPanelToggle) onPanelToggle(true); // Notify panel is open at 50%
       } else {
-        // Ouvrir le panneau à 100% si le déplacement est inférieur à 25% de la hauteur
-        translateY.value = withTiming(0, { duration: 300 });
+        // Open panel to 80% if moved to less than 25% height
+        translateY.value = withTiming(maxOpenPosition, { duration: 300 });
         setIsFullyOpen(true);
-        if (onPanelToggle) onPanelToggle(true); // Indiquer que le panneau est ouvert à 100%
+        if (onPanelToggle) onPanelToggle(true); // Notify panel is fully open
       }
     } else {
-      // Geste vers le haut
+      // Gesture upwards
       if (translateY.value < parentHeight * 0.25) {
-        // Ouvrir le panneau à 100% si le déplacement est inférieur à 25% de la hauteur
-        translateY.value = withTiming(0, { duration: 300 });
+        // Open panel to 80% if moved to less than 25% height
+        translateY.value = withTiming(maxOpenPosition, { duration: 300 });
         setIsFullyOpen(true);
-        if (onPanelToggle) onPanelToggle(true); // Indiquer que le panneau est ouvert à 100%
+        if (onPanelToggle) onPanelToggle(true); // Notify panel is fully open
       } else if (translateY.value < parentHeight * 0.75) {
-        // Ouvrir le panneau à 50% si le déplacement est entre 25% et 75% de la hauteur
+        // Open panel to 50% if moved between 25% and 75%
         translateY.value = withTiming(parentHeight * 0.5, { duration: 300 });
         setIsFullyOpen(false);
-        if (onPanelToggle) onPanelToggle(true); // Indiquer que le panneau est ouvert à 50%
+        if (onPanelToggle) onPanelToggle(true); // Notify panel is open at 50%
       } else {
-        // Fermer le panneau si le déplacement est supérieur à 75% de la hauteur
-        translateY.value = withTiming(parentHeight, { duration: 300 });
+        // Close panel to minClosedPosition if moved beyond 75%
+        translateY.value = withTiming(minClosedPosition, { duration: 300 });
         setIsFullyOpen(false);
-        if (onPanelToggle) onPanelToggle(false); // Indiquer que le panneau est fermé
+        if (onPanelToggle) onPanelToggle(false); // Notify panel is closed
       }
     }
   };
@@ -107,9 +110,9 @@ const SwipeUp = ({ props, onPanelToggle, openAtHalf, parentHeight }) => {
   }));
 
   const handleClose = () => {
-    translateY.value = withTiming(parentHeight, { duration: 300 });
+    translateY.value = withTiming(minClosedPosition, { duration: 300 });
     setIsFullyOpen(false);
-    if (onPanelToggle) onPanelToggle(false); // Indiquer que le panneau est fermé
+    if (onPanelToggle) onPanelToggle(false); // Notify panel is closed
   };
 
   return (
@@ -118,13 +121,13 @@ const SwipeUp = ({ props, onPanelToggle, openAtHalf, parentHeight }) => {
         onGestureEvent={onGestureEvent}
         onBegan={onGestureBegin}
         onEnded={onGestureEnd}
-        hitSlop={{ top: 20, bottom: 50, left: 50, right: 50 }} // Augmente la zone de détection
+        hitSlop={{ top: 20, bottom: 50, left: 50, right: 50 }} // Increase hit area
       >
         <Animated.View
           style={[animatedStyle, { height: parentHeight }]}
           className="absolute bottom-0 w-full bg-white rounded-t-3xl p-4"
         >
-          <View className="h-1 w-20 bg-gray-300 rounded-full self-center mb-2 top-1" />
+          <View className="h-1 w-20 bg-gray-300 rounded-full self-center mb-4 top-1" />
           {markerData ? (
             <>
               <Text className="text-gray-500 text-center">

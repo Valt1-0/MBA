@@ -16,10 +16,9 @@
 // const AnimatedLottieView = Animated.createAnimatedComponent(LottieView);
 // const AnimatedLottieViewSplash2 = Animated.createAnimatedComponent(LottieView);
 
-// const SplashScreen = ({ navigation }) => {
+// const SplashScreen = () => {
 //   const opacityAnimationLoading = new Animated.Value(0);
 //   const opacityAnimationSplash1 = new Animated.Value(1);
-//   const opacityAnimationSplash2 = new Animated.Value(0);
 
 //   const screenWidth = Dimensions.get("window").width;
 //   const translateX = useRef(new Animated.Value(-screenWidth)).current;

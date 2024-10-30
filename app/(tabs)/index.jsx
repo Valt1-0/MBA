@@ -23,6 +23,7 @@ import { collection, getDocs } from "firebase/firestore";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import SwipeUp from "../../components/SwipeUp";
 import { customMapStyle } from "../../utils/customMap";
+import * as NavigationBar from "expo-navigation-bar";
 
 const HomeScreen = () => {
   const [places, setPlaces] = useState([]);
@@ -34,6 +35,10 @@ const HomeScreen = () => {
   const [parentHeight, setParentHeight] = useState(0);
 
   useEffect(() => {
+    if (Platform.OS === "android") {
+      NavigationBar.setBackgroundColorAsync("white");
+    }
+
     const fetchPlaces = async () => {
       const placesCollection = collection(db, "places");
       const placesSnapshot = await getDocs(placesCollection);
@@ -43,7 +48,7 @@ const HomeScreen = () => {
       }));
       setPlaces(placesList);
     };
-    console.log("Fetching places...");
+    // console.log("Fetching places...");
 
     fetchPlaces();
   }, []);
@@ -100,7 +105,7 @@ const HomeScreen = () => {
       if (locationDetails.length > 0) {
         const { city } = locationDetails[0];
         setCity(city);
-        console.log("Nearest city:", city);
+        // console.log("Nearest city:", city);
       } else {
         console.log("No city found for these coordinates.");
       }
@@ -112,7 +117,7 @@ const HomeScreen = () => {
     setPanelOpen(true);
   };
   const handleMapPress = () => {
-    console.log("Map pressed");
+    // console.log("Map pressed");
     setFollowUser(false); // Désactivez le suivi de l'utilisateur lors de l'interaction avec la carte
   };
 
@@ -179,7 +184,7 @@ const HomeScreen = () => {
           {places.map((place) => (
             <Marker
               key={place.id}
-              tracksViewChanges = {false}
+              tracksViewChanges={false}
               coordinate={{
                 latitude: place.latitude,
                 longitude: place.longitude,
