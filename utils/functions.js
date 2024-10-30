@@ -18,4 +18,24 @@ const getColorByType = (type) => {
   }
 };
 
-export { getColorByType };
+
+const getIconByType = (type) => {
+  switch (type) {
+    case "Tourism":
+      return "person-walking";
+    case "Museum":
+      return "building-columns";
+    case "Cinema":
+      return "film";
+    case "Theater":
+      return "masks-theater";
+    case "Park":
+      return "tree";
+    case "Education":
+      return "graduation-cap";
+    default:
+      return "map-marker"; // Icône par défaut
+  }
+};
+
+export { getColorByType, getIconByType };
