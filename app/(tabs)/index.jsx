@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -32,7 +32,8 @@ import SwipeUp from "../../components/SwipeUp";
 import { customMapStyle } from "../../utils/customMap";
 import * as NavigationBar from "expo-navigation-bar";
 import { geohashQueryBounds, distanceBetween } from "geofire-common";
-import { useFocusEffect } from "expo-router";
+import { useSegments,usePathname } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 
 const HomeScreen = () => {
   const [places, setPlaces] = useState([]);
@@ -40,8 +41,10 @@ const HomeScreen = () => {
   const [city, setCity] = useState(null);
   const mapRef = useRef(null);
   const [followUser, setFollowUser] = useState(true);
-  const [panelOpen, setPanelOpen] = useState(true);
   const [parentHeight, setParentHeight] = useState(0);
+  const swipeUpRef = useRef(null);
+  const segments = useSegments();
+  const pathName = usePathname();
 
   async function queryNearbyPlaces(center, radiusInM) {
     const bounds = geohashQueryBounds(center, radiusInM);
@@ -78,27 +81,17 @@ const HomeScreen = () => {
     return matchingDocs;
   }
 
-  useFocusEffect(() => {
-    setPanelOpen(true);
-  });
-  useFocusEffect(() => {
-    setPanelOpen(true);
-  });
+useLayoutEffect(() => {
 
-  // useEffect(() => {
-  //   const fetchPlaces = async () => {
-  //     const placesCollection = collection(db, "places");
-  //     const placesSnapshot = await getDocs(placesCollection);
-  //     const placesList = placesSnapshot.docs.map((doc) => ({
-  //       id: doc.id,
-  //       ...doc.data(),
-  //     }));
-  //     setPlaces(placesList);
-  //   };
-  //   console.log("Fetching places...");
 
-  //   fetchPlaces();
-  // }, []);
+  console.log("useLayoutEffect:" );
+ },[]);
+
+  useEffect(() => {
+    console.log("pathName:", pathName);
+  }, [pathName]);
+
+
 
   useEffect(() => {
     if (Platform.OS === "android") {
@@ -178,7 +171,8 @@ const HomeScreen = () => {
 
   const handleMarkerPress = (place) => {
     setSelectedPlace(place);
-    setPanelOpen(true);
+    //setPanelOpen(true);
+    swipeUpRef?.current?.openAtHalf(1);
   };
   const handleMapPress = () => {
     setFollowUser(false); // Désactivez le suivi de l'utilisateur lors de l'interaction avec la carte
@@ -276,12 +270,11 @@ const HomeScreen = () => {
           </TouchableOpacity>
         )}
         <SwipeUp
-          onPanelToggle={setPanelOpen}
-          openAtHalf={panelOpen}
+          ref={swipeUpRef}
           parentHeight={parentHeight}
           positions={[10, 50, 100]} // Positions en pourcentage
         >
-          <View className="h-1 w-20 bg-gray-300 rounded-full self-center mb-2 top-1"/>
+          <View className="h-1 w-20 bg-gray-300 rounded-full self-center mb-2 top-1" />
           {selectedPlace ? (
             <>
               <Text className="text-gray-500 text-center">
