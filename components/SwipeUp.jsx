@@ -29,12 +29,23 @@ const SwipeUp = forwardRef(
     const minClosedPosition = positionValues[0]; // Position just above the tab bar
     const maxOpenPosition = positionValues[positions.length - 1]; // Maximum open position (80% screen height)
 
+    const handlePostionChange = (position, duration) => {
+      if (duration === 0) {
+        translateY.value = position;
+      } else {
+        translateY.value = withTiming(position, { duration: duration });
+      }
+
+      if (onPositionChange) {
+        onPositionChange(position, duration > 0 ? true : false);
+      }
+    };
+
     useFocusEffect(
       React.useCallback(() => {
         // Réinitialiser la position du panneau lorsque l'écran est focalisé
-        translateY.value = withTiming(positionValues[0], {
-          duration: 300,
-        });
+
+        handlePostionChange(positionValues[0], 300);
         setIsFullyOpen(false);
         //if (onPanelToggle) onPanelToggle(false); // Notify panel is closed
       }, [translateY, parentHeight])
@@ -47,17 +58,20 @@ const SwipeUp = forwardRef(
         if (pos !== undefined) {
           position = positionValues[pos];
         }
+        handlePostionChange(position, 300);
+        //translateY.value = withTiming(position, { duration: 300 });
 
-        translateY.value = withTiming(position, { duration: 300 });
         setIsFullyOpen(false);
         // //if (onPanelToggle) onPanelToggle(true); // Indiquer que le panneau est ouvert à 50%
       },
       openAtFull: () => {
-        translateY.value = withTiming(0, { duration: 300 });
+        //translateY.value = withTiming(0, { duration: 300 });
+        handlePostionChange(0, 300);
         setIsFullyOpen(true);
       },
       close: () => {
-        translateY.value = withTiming(parentHeight, { duration: 300 });
+        handlePostionChange(parentHeight, 300);
+        // translateY.value = withTiming(parentHeight, { duration: 300 });
         setIsFullyOpen(false);
       },
       getTranslateY: () => translateY.value,
@@ -73,13 +87,15 @@ const SwipeUp = forwardRef(
 
     const onGestureEvent = (event) => {
       // Move panel during gesture, clamping between minClosedPosition and maxOpenPosition
-      translateY.value = Math.max(
+
+      const posTranslate = Math.max(
         maxOpenPosition,
         Math.min(
           minClosedPosition,
           startY.value + event.nativeEvent.translationY
         )
       );
+      handlePostionChange(posTranslate, 1);
 
       // Notify parent component of position change
       if (onPositionChange) {
@@ -109,10 +125,10 @@ const SwipeUp = forwardRef(
         }
       }
       // Définir la position finale
-      translateY.value = withTiming(closestPosition, { duration: 300 });
-      if (onPositionChange) {
-        onPositionChange(closestPosition,true);
-      }
+
+      handlePostionChange(closestPosition, 300);
+      //translateY.value = withTiming(closestPosition, { duration: 300 });
+
       // Mettre à jour l'état en fonction de la position finale
       if (closestPosition === 0) {
         setIsFullyOpen(true);
@@ -128,7 +144,8 @@ const SwipeUp = forwardRef(
     }));
 
     const handleClose = () => {
-      translateY.value = withTiming(positionValues[0], { duration: 300 });
+      handlePostionChange(positionValues[0], 300);
+      //translateY.value = withTiming(positionValues[0], { duration: 300 });
       setIsFullyOpen(false);
       //if (onPanelToggle) onPanelToggle(false); // Notify panel is closed
     };
