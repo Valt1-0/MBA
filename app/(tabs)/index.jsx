@@ -33,7 +33,7 @@ import { customMapStyle } from "../../utils/customMap";
 import * as NavigationBar from "expo-navigation-bar";
 import { geohashQueryBounds, distanceBetween } from "geofire-common";
 import { useSegments,usePathname } from "expo-router";
-import { useFocusEffect } from "@react-navigation/native";
+import RangeSlider from "../../components/Slider";
 
 const HomeScreen = () => {
   const [places, setPlaces] = useState([]);
@@ -269,6 +269,8 @@ useLayoutEffect(() => {
             <FontAwesome name="location-arrow" size={24} color="white" />
           </TouchableOpacity>
         )}
+        <RangeSlider />
+
         <SwipeUp
           ref={swipeUpRef}
           parentHeight={parentHeight}
