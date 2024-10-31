@@ -47,6 +47,7 @@ const HomeScreen = () => {
   const pathName = usePathname();
   const [sliderValue, setSliderValue] = useState(1);
   const [location, setLocation] = useState(null);
+  const sliderRef = useRef(null);
 
   async function queryNearbyPlaces(center, radiusInM) {
     const bounds = geohashQueryBounds(center, radiusInM);
@@ -180,6 +181,7 @@ const HomeScreen = () => {
     swipeUpRef?.current?.openAtHalf(1);
   };
   const handleMapPress = () => {
+    sliderRef?.current?.close();
     setFollowUser(false); // Désactivez le suivi de l'utilisateur lors de l'interaction avec la carte
   };
 
@@ -274,7 +276,8 @@ const HomeScreen = () => {
             <FontAwesome name="location-arrow" size={24} color="white" />
           </TouchableOpacity>
         )}
-        <RangeSlider 
+        <RangeSlider
+          ref={sliderRef}
           onSlidingComplete={(value) => setSliderValue(value)}
         />
 

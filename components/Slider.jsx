@@ -1,31 +1,30 @@
-import React, { useRef, useState } from "react";
+import React, {
+  forwardRef,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { View, TouchableWithoutFeedback, Animated, Text } from "react-native";
 import { FontAwesome6 } from "@expo/vector-icons";
 import Slider from "@react-native-community/slider"; // Importer le composant Slider
 
-const RangeSlider = ({ onSlidingComplete }) => {
+const RangeSlider = forwardRef(({ onSlidingComplete }, ref) => {
   const widthAnim = useRef(new Animated.Value(64)).current; // Valeur initiale de la largeur (56 correspond à 14 * 4)
   const opacityAnim = useRef(new Animated.Value(0)).current; // Valeur initiale de l'opacité
   const [isExpanded, setIsExpanded] = useState(false); // État pour suivre si la vue est élargie
   const [sliderValue, setSliderValue] = useState(1); // Valeur initiale du curseur
   const allowedValues = [1, 5, 10, 15, 20]; // Valeurs autorisées
 
+  useImperativeHandle(ref, () => ({
+    close: () => {
+      close();
+    },
+  }));
+
   const handlePress = () => {
+    console.log("isExpanded", isExpanded);
     if (isExpanded) {
-      // Animer l'opacité à 0 avant de rétracter la largeur
-      Animated.timing(opacityAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start(() => {
-        Animated.timing(widthAnim, {
-          toValue: 64,
-          duration: 300,
-          useNativeDriver: false,
-        }).start(() => {
-          setIsExpanded(false);
-        });
-      });
+      close();
     } else {
       // Élargir la largeur avant d'animer l'opacité à 1
       Animated.timing(widthAnim, {
@@ -41,6 +40,23 @@ const RangeSlider = ({ onSlidingComplete }) => {
         }).start();
       });
     }
+  };
+
+  const close = () => {
+    // Animer l'opacité à 0 avant de rétracter la largeur
+    Animated.timing(opacityAnim, {
+      toValue: 0,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      Animated.timing(widthAnim, {
+        toValue: 64,
+        duration: 300,
+        useNativeDriver: false,
+      }).start(() => {
+        setIsExpanded(false);
+      });
+    });
   };
 
   const handleValueChange = (value) => {
@@ -84,6 +100,6 @@ const RangeSlider = ({ onSlidingComplete }) => {
       </TouchableWithoutFeedback>
     </View>
   );
-};
+});
 
 export default RangeSlider;
