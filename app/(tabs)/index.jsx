@@ -6,6 +6,7 @@ import {
   Alert,
   Platform,
   StyleSheet,
+  Animated,
 } from "react-native";
 import MapView, {
   Callout,
@@ -48,6 +49,7 @@ const HomeScreen = () => {
   const [sliderValue, setSliderValue] = useState(1);
   const [location, setLocation] = useState(null);
   const sliderRef = useRef(null);
+  const buttonAnim = useRef(new Animated.Value(0)).current;
 
   async function queryNearbyPlaces(center, radiusInM) {
     const bounds = geohashQueryBounds(center, radiusInM);
@@ -185,6 +187,14 @@ const HomeScreen = () => {
     setFollowUser(false); // Désactivez le suivi de l'utilisateur lors de l'interaction avec la carte
   };
 
+  const handleSwipePositionChange = (newPosition, final = false) => {
+    Animated.timing(buttonAnim, {
+      toValue: -(parentHeight - newPosition), // La position verticale en fonction du swipe
+      duration: final ? 300 : 0, // Durée à 0 pour suivre en temps réel
+      useNativeDriver: false,
+    }).start();
+  };
+
   const handleMyLocationPress = async () => {
     let userLocation = await Location.getLastKnownPositionAsync({
       maxAge: 300000,
@@ -268,22 +278,26 @@ const HomeScreen = () => {
             </Marker>
           ))}
         </MapView>
-        {Platform.OS === "ios" && !followUser && (
-          <TouchableOpacity
-            style={styles.myLocationButton}
-            onPress={handleMyLocationPress}
-          >
-            <FontAwesome name="location-arrow" size={24} color="white" />
-          </TouchableOpacity>
-        )}
-        <RangeSlider
-          ref={sliderRef}
-          onSlidingComplete={(value) => setSliderValue(value)}
-        />
+
+        <Animated.View style={{ transform: [{ translateY: buttonAnim }] }}>
+          {Platform.OS === "ios" && !followUser && (
+            <TouchableOpacity
+              style={styles.myLocationButton}
+              onPress={handleMyLocationPress}
+            >
+              <FontAwesome name="location-arrow" size={24} color="white" />
+            </TouchableOpacity>
+          )}
+          <RangeSlider
+            ref={sliderRef}
+            onSlidingComplete={(value) => setSliderValue(value)}
+          />
+        </Animated.View>
 
         <SwipeUp
           ref={swipeUpRef}
           parentHeight={parentHeight}
+          onPositionChange={handleSwipePositionChange}
           positions={[10, 50, 100]} // Positions en pourcentage
         >
           <View className="h-1 w-20 bg-gray-300 rounded-full self-center mb-2 top-1" />
