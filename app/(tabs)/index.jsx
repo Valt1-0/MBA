@@ -32,7 +32,7 @@ import SwipeUp from "../../components/SwipeUp";
 import { customMapStyle } from "../../utils/customMap";
 import * as NavigationBar from "expo-navigation-bar";
 import { geohashQueryBounds, distanceBetween } from "geofire-common";
-import { useSegments,usePathname } from "expo-router";
+import { useSegments, usePathname } from "expo-router";
 import RangeSlider from "../../components/Slider";
 
 const HomeScreen = () => {
@@ -45,6 +45,8 @@ const HomeScreen = () => {
   const swipeUpRef = useRef(null);
   const segments = useSegments();
   const pathName = usePathname();
+  const [sliderValue, setSliderValue] = useState(1);
+  const [location, setLocation] = useState(null);
 
   async function queryNearbyPlaces(center, radiusInM) {
     const bounds = geohashQueryBounds(center, radiusInM);
@@ -81,23 +83,35 @@ const HomeScreen = () => {
     return matchingDocs;
   }
 
-useLayoutEffect(() => {
-
-
-  console.log("useLayoutEffect:" );
- },[]);
+  useLayoutEffect(() => {
+    console.log("useLayoutEffect:");
+  }, []);
 
   useEffect(() => {
     console.log("pathName:", pathName);
   }, [pathName]);
-
-
 
   useEffect(() => {
     if (Platform.OS === "android") {
       NavigationBar.setBackgroundColorAsync("white");
     }
   }, []);
+
+  useEffect(() => {
+    if (!location) return;
+    console.log("location:", location);
+    const center = [location?.latitude, location?.longitude];
+    const radiusInM = sliderValue * 100; // Rayon en mètres
+
+    queryNearbyPlaces(center, radiusInM).then((docs) => {
+      const placesData = docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      console.log("placesData:", placesData);
+      setPlaces(placesData);
+    });
+  }, [location, sliderValue]);
 
   useEffect(() => {
     (async () => {
@@ -122,16 +136,7 @@ useLayoutEffect(() => {
         longitudeDelta: 0.28,
       };
 
-      const center = [userCoords.latitude, userCoords.longitude];
-      const radiusInM = 1000; // Rayon en mètres
-
-      queryNearbyPlaces(center, radiusInM).then((docs) => {
-        const placesData = docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        setPlaces(placesData);
-      });
+      setLocation(userCoords);
 
       if (mapRef.current) {
         setFollowUser(false);
@@ -269,7 +274,9 @@ useLayoutEffect(() => {
             <FontAwesome name="location-arrow" size={24} color="white" />
           </TouchableOpacity>
         )}
-        <RangeSlider />
+        <RangeSlider 
+          onSlidingComplete={(value) => setSliderValue(value)}
+        />
 
         <SwipeUp
           ref={swipeUpRef}
