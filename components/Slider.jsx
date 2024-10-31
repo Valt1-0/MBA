@@ -8,7 +8,7 @@ const RangeSlider = ({ onSlidingComplete }) => {
   const opacityAnim = useRef(new Animated.Value(0)).current; // Valeur initiale de l'opacité
   const [isExpanded, setIsExpanded] = useState(false); // État pour suivre si la vue est élargie
   const [sliderValue, setSliderValue] = useState(1); // Valeur initiale du curseur
-  const allowedValues = [1, 5, 10, 15, 80]; // Valeurs autorisées
+  const allowedValues = [1, 5, 10, 15, 20]; // Valeurs autorisées
 
   const handlePress = () => {
     if (isExpanded) {
@@ -67,8 +67,8 @@ const RangeSlider = ({ onSlidingComplete }) => {
             >
               <Slider
                 style={{ width: "100%", height: 20 }}
-                minimumValue={1}
-                maximumValue={80}
+                minimumValue={allowedValues[0]}
+                maximumValue={allowedValues[allowedValues.length - 1]}
                 step={1}
                 value={sliderValue}
                 onValueChange={handleValueChange}
