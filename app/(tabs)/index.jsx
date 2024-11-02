@@ -7,6 +7,8 @@ import {
   Platform,
   StyleSheet,
   Animated,
+  FlatList,
+  Dimensions,
 } from "react-native";
 import MapView, {
   Callout,
@@ -179,7 +181,34 @@ const HomeScreen = () => {
 
   const handleMarkerPress = (place) => {
     setSelectedPlace(place);
-    //setPanelOpen(true);
+
+    // Obtenez la hauteur de l'écran
+    const screenHeight = parentHeight;
+
+    // Calculez la hauteur de votre composant de swipe lorsqu'il est ouvert à 50%
+    const swipeHeight = screenHeight * -0.3;
+
+    // Calculez le décalage en latitude en fonction de la hauteur du swipe
+    const latitudeDelta = 0.01; // Utilisé pour le niveau de zoom
+    const offset = (swipeHeight / screenHeight) * latitudeDelta;
+
+    // Ajustez la latitude pour décaler la région vers le haut
+    const adjustedLatitude = place.latitude + offset;
+
+    const userCoords = {
+      latitude: adjustedLatitude,
+      longitude: place.longitude,
+    };
+
+    mapRef.current.animateCamera(
+      {
+        altitude: 2000,
+        center: userCoords,
+        zoom: Platform.OS === "ios" ? 0 : 19,
+      },
+      { duration: 350 }
+    );
+    setFollowUser(false);
     swipeUpRef?.current?.openAtHalf(1);
   };
   const handleMapPress = () => {
@@ -329,16 +358,48 @@ const HomeScreen = () => {
               </Text>
             </>
           ) : (
-            <Text className="text-gray-700 font-semibold top-3 text-xl">
-              Nouveautés à {city}
-            </Text>
+            <>
+              <Text className="text-gray-700 font-semibold top-3 text-xl">
+                Nouveautés à {city}
+              </Text>
+
+              <FlatList
+                horizontal
+                data={places}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <TouchableOpacity onPress={() => handleMarkerPress(item)}>
+                    <View
+                      style={{
+                        width: 160,
+                        height: 160,
+                        backgroundColor: "white",
+                        borderRadius: 10,
+                        padding: 8,
+                        margin: 8,
+                        shadowColor: "#000",
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.25,
+                        shadowRadius: 3.84,
+                        elevation: 5,
+                      }}
+                    >
+                      <FontAwesome6
+                        name={getIconByType(item.type)}
+                        size={20}
+                        color={getColorByType(item.type)}
+                      />
+                      <Text style={{ color: "#4A4A4A" }}>{item.name}</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+              ></FlatList>
+            </>
           )}
         </SwipeUp>
       </View>
     </GestureHandlerRootView>
   );
 };
-const styles = StyleSheet.create({
-
-});
+const styles = StyleSheet.create({});
 export default HomeScreen;
