@@ -188,8 +188,11 @@ const HomeScreen = () => {
   };
 
   const handleSwipePositionChange = (newPosition, final = false) => {
+    const maxPosition = -(parentHeight * 0.5); // Définissez votre valeur maximale ici
+    const targetValue = Math.max(-(parentHeight - newPosition), maxPosition);
+
     Animated.timing(buttonAnim, {
-      toValue: -(parentHeight - newPosition), // La position verticale en fonction du swipe
+      toValue: targetValue, // La position verticale en fonction du swipe
       duration: final ? 300 : 0, // Durée à 0 pour suivre en temps réel
       useNativeDriver: false,
     }).start();
@@ -278,14 +281,29 @@ const HomeScreen = () => {
             </Marker>
           ))}
         </MapView>
+        {console.log(
+          "parentHeight:",
+          -(parentHeight * 0.52),
+          buttonAnim._value,
+          buttonAnim._value < -(parentHeight * 0.4)
+        )}
 
-        <Animated.View style={{ transform: [{ translateY: buttonAnim }] }}>
+        <Animated.View
+          style={{
+            transform: [{ translateY: buttonAnim }],
+          }}
+        >
           {Platform.OS === "ios" && !followUser && (
             <TouchableOpacity
-              style={styles.myLocationButton}
+              className="absolute bottom-10 left-5"
               onPress={handleMyLocationPress}
             >
-              <FontAwesome name="location-arrow" size={24} color="white" />
+              <View
+                style={{ width: 64 }}
+                className="h-16 bg-white border border-slate-300 rounded-3xl items-center justify-center p-2"
+              >
+                <FontAwesome name="location-arrow" size={20} color="#777777" />
+              </View>
             </TouchableOpacity>
           )}
           <RangeSlider
@@ -321,18 +339,6 @@ const HomeScreen = () => {
   );
 };
 const styles = StyleSheet.create({
-  myLocationButton: {
-    position: "absolute",
-    bottom: 80,
-    right: 20,
-    backgroundColor: "#007AFF",
-    borderRadius: 50,
-    padding: 10,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-  },
+
 });
 export default HomeScreen;

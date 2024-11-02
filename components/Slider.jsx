@@ -68,7 +68,7 @@ const RangeSlider = forwardRef(({ onSlidingComplete }, ref) => {
   };
 
   return (
-    <View className="absolute bottom-40 right-5">
+    <View className="absolute bottom-10 right-5">
       <TouchableWithoutFeedback onPress={handlePress}>
         <Animated.View
           style={{ width: widthAnim }}
