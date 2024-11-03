@@ -116,12 +116,13 @@ const SwipeUp = forwardRef(
       // Trouver la position la plus proche
       let closestPosition = positionValues[0];
       let minDistance = Math.abs(translateY.value - closestPosition);
-
+      let pos = 0;
       for (let i = 1; i < positionValues.length; i++) {
         const distance = Math.abs(translateY.value - positionValues[i]);
         if (distance < minDistance) {
           closestPosition = positionValues[i];
           minDistance = distance;
+          pos = i;
         }
       }
       // Définir la position finale

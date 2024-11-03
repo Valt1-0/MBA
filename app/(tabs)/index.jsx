@@ -52,6 +52,8 @@ const HomeScreen = () => {
   const [location, setLocation] = useState(null);
   const sliderRef = useRef(null);
   const buttonAnim = useRef(new Animated.Value(0)).current;
+  const [userLocation, setUserLocation] = useState(null);
+  const [pourcentage, setPourcentage] = useState(0);
 
   async function queryNearbyPlaces(center, radiusInM) {
     const bounds = geohashQueryBounds(center, radiusInM);
@@ -179,44 +181,25 @@ const HomeScreen = () => {
     })();
   }, []);
 
-  const handleMarkerPress = (place) => {
+  const handleMarkerPress = async (place) => {
     setSelectedPlace(place);
-
-    // Obtenez la hauteur de l'écran
-    const screenHeight = parentHeight;
-
-    // Calculez la hauteur de votre composant de swipe lorsqu'il est ouvert à 50%
-    const swipeHeight = screenHeight * -0.3;
-
-    // Calculez le décalage en latitude en fonction de la hauteur du swipe
-    const latitudeDelta = 0.01; // Utilisé pour le niveau de zoom
-    const offset = (swipeHeight / screenHeight) * latitudeDelta;
-
-    // Ajustez la latitude pour décaler la région vers le haut
-    const adjustedLatitude = place.latitude + offset;
+    setFollowUser(false);
 
     const userCoords = {
-      latitude: adjustedLatitude,
+      latitude: place.latitude,
       longitude: place.longitude,
     };
-
-    mapRef.current.animateCamera(
-      {
-        altitude: 2000,
-        center: userCoords,
-        zoom: Platform.OS === "ios" ? 0 : 19,
-      },
-      { duration: 350 }
-    );
-    setFollowUser(false);
     swipeUpRef?.current?.openAtHalf(1);
+
+    await updateCamera(userCoords, pourcentage);
   };
+
   const handleMapPress = () => {
     sliderRef?.current?.close();
     setFollowUser(false); // Désactivez le suivi de l'utilisateur lors de l'interaction avec la carte
   };
 
-  const handleSwipePositionChange = (newPosition, final = false) => {
+  const handleSwipePositionChange = async (newPosition, final = false) => {
     const maxPosition = -(parentHeight * 0.5); // Définissez votre valeur maximale ici
     const targetValue = Math.max(-(parentHeight - newPosition), maxPosition);
 
@@ -225,6 +208,35 @@ const HomeScreen = () => {
       duration: final ? 300 : 0, // Durée à 0 pour suivre en temps réel
       useNativeDriver: false,
     }).start();
+
+    const pourcentage = (1 - newPosition / parentHeight) / 2;
+    if (userLocation && final) {
+      const center = {
+        latitude: userLocation.latitude,
+        longitude: userLocation.longitude,
+      };
+
+      await updateCamera(center, pourcentage);
+      setPourcentage(pourcentage);
+    }
+  };
+
+  const updateCamera = async (center, pourcentage) => {
+    console.log("center:", center, pourcentage);
+    const { northEast, southWest } = await mapRef.current.getMapBoundaries();
+    const latOffset = (northEast.latitude - southWest.latitude) * pourcentage;
+    const adjustedLatitude = center.latitude - latOffset;
+
+    const userCoords = {
+      latitude: adjustedLatitude,
+      longitude: center.longitude,
+    };
+
+    await mapRef.current.animateCamera({
+      //altitude: 2000,
+      center: userCoords,
+      zoom: Platform.OS === "ios" ? 2 : 19,
+    });
   };
 
   const handleMyLocationPress = async () => {
@@ -236,6 +248,11 @@ const HomeScreen = () => {
       userLocation = await Location.getCurrentPositionAsync({});
     }
 
+    setUserLocation({
+      latitude: userLocation.coords.latitude,
+      longitude: userLocation.coords.longitude,
+    });
+
     const userCoords = {
       latitude: userLocation.coords.latitude,
       longitude: userLocation.coords.longitude,
@@ -244,16 +261,23 @@ const HomeScreen = () => {
     };
 
     if (mapRef.current) {
-      setFollowUser(false);
-      mapRef.current.animateCamera(
-        {
-          altitude: 2000,
-          center: userCoords,
-          zoom: Platform.OS === "ios" ? 0 : 19,
-        },
-        { duration: 350 }
-      );
+      await updateCamera(userCoords, pourcentage);
       setFollowUser(true);
+    }
+  };
+
+  const handleUserLocationChange = async (event) => {
+    const { latitude, longitude } = event.nativeEvent.coordinate;
+
+    setUserLocation({ latitude, longitude });
+
+    if (followUser) {
+      const center = {
+        latitude,
+        longitude,
+      };
+      if (pourcentage >= 0.1) await updateCamera(center, pourcentage);
+      else await updateCamera(center, 0);
     }
   };
 
@@ -271,7 +295,7 @@ const HomeScreen = () => {
           ref={mapRef}
           customMapStyle={customMapStyle}
           style={{ width: "100%", height: "100%" }}
-          followsUserLocation={followUser}
+          followsUserLocation={false}
           showsUserLocation={true}
           onPress={() => {
             setSelectedPlace(null);
@@ -286,6 +310,8 @@ const HomeScreen = () => {
           provider={
             Platform.OS === "android" ? PROVIDER_GOOGLE : PROVIDER_DEFAULT
           }
+          onUserLocationChange={handleUserLocationChange}
+          loadingEnabled={true}
         >
           {places.map((place) => (
             <Marker
@@ -310,13 +336,6 @@ const HomeScreen = () => {
             </Marker>
           ))}
         </MapView>
-        {console.log(
-          "parentHeight:",
-          -(parentHeight * 0.52),
-          buttonAnim._value,
-          buttonAnim._value < -(parentHeight * 0.4)
-        )}
-
         <Animated.View
           style={{
             transform: [{ translateY: buttonAnim }],
