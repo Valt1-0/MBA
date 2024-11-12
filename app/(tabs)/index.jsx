@@ -194,8 +194,6 @@ const HomeScreen = () => {
     const updatePlace = async () => {
       await updateCamera(userCoords, state.pourcentage);
       swipeUpRef?.current?.openAtHalf(1);
-
-      // Passez place directement à updateCamera
     };
 
     updatePlace();
