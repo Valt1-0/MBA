@@ -8,17 +8,15 @@ import {
   StyleSheet,
   Animated,
   FlatList,
-  Dimensions,
 } from "react-native";
 import MapView, {
-  Callout,
   Marker,
   PROVIDER_GOOGLE,
   PROVIDER_DEFAULT,
 } from "react-native-maps";
 import * as Location from "expo-location";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { FontAwesome, Entypo, FontAwesome6 } from "@expo/vector-icons";
+import { FontAwesome, FontAwesome6 } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { getColorByType, getIconByType } from "../../utils/functions";
 import { db } from "../../utils/firebase";
@@ -185,7 +183,6 @@ const HomeScreen = () => {
   }, []);
 
   useEffect(() => {
-    console.log("selectedPlace:1", state.selectedPlace);
     if (!state.selectedPlace) return;
     const userCoords = {
       latitude: state.selectedPlace.latitude,
@@ -225,7 +222,6 @@ const HomeScreen = () => {
     setAllValues({ pourcentage: newPourcentage });
 
     if (state.userLocation && final) {
-      console.log("selectedPlace:", state.selectedPlace);
 
       const center = {
         latitude: state.selectedPlace
