@@ -222,7 +222,6 @@ const HomeScreen = () => {
     setAllValues({ pourcentage: newPourcentage });
 
     if (state.userLocation && final) {
-
       const center = {
         latitude: state.selectedPlace
           ? state.selectedPlace.latitude
