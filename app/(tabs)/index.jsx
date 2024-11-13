@@ -60,6 +60,8 @@ const HomeScreen = () => {
   const buttonAnim = useRef(new Animated.Value(0)).current;
   const segments = useSegments();
   const pathName = usePathname();
+  const [temporaryMarker, setTemporaryMarker] = useState(null); // Marqueur temporaire
+  const blinkOpacity = useRef(new Animated.Value(0.5)).current; // Animation de clignotement
 
   const setAllValues = (newValues) => {
     setState((prevState) => ({
@@ -221,7 +223,11 @@ const HomeScreen = () => {
     setAllValues({ followUser: false }); // Désactivez le suivi de l'utilisateur lors de l'interaction avec la carte
   };
 
-  const handleSwipePositionChange = async (newPosition, final = false,end=false) => {
+  const handleSwipePositionChange = async (
+    newPosition,
+    final = false,
+    end = false
+  ) => {
     console.log("swipePosition:", newPosition);
     const maxPosition = -(state.parentHeight * 0.5); // Définissez votre valeur maximale ici
     const targetValue = Math.max(
@@ -490,32 +496,6 @@ const HomeScreen = () => {
                   </TouchableOpacity>
                 )}
               />
-                      <FontAwesome name={item} size={30} color="#000" />
-                    </TouchableOpacity>
-                  )}
-                />
-
-                <Text>Note:</Text>
-                {/* <Slider
-                  minimumValue={0}
-                  maximumValue={5}
-                  step={0.5}
-                  value={temporaryMarker?.rating}
-                  onValueChange={(value) =>
-                    setTemporaryMarker((prev) => ({ ...prev, rating: value }))
-                  }
-                /> */}
-
-                <Button
-                  title="Ajouter le marqueur"
-                  onPress={() => {
-                    if (temporaryMarker) {
-                      setPlaces((prev) => [...prev, temporaryMarker]);
-                      setTemporaryMarker(null); // Supprime le marqueur temporaire
-                    }
-                  }}
-                />
-              </View>
             </>
           )}
         </SwipeUp>
@@ -523,7 +503,5 @@ const HomeScreen = () => {
     </GestureHandlerRootView>
   );
 };
-
-const styles = StyleSheet.create({});
 
 export default HomeScreen;
