@@ -9,6 +9,8 @@ import {
   Animated,
   FlatList,
   Dimensions,
+  TextInput,
+  Button,
 } from "react-native";
 import MapView, {
   Callout,
@@ -52,6 +54,8 @@ const HomeScreen = () => {
   const [location, setLocation] = useState(null);
   const sliderRef = useRef(null);
   const buttonAnim = useRef(new Animated.Value(0)).current;
+  const [temporaryMarker, setTemporaryMarker] = useState(null);
+  const blinkOpacity = useRef(new Animated.Value(0.5)).current;
 
   async function queryNearbyPlaces(center, radiusInM) {
     const bounds = geohashQueryBounds(center, radiusInM);
@@ -211,9 +215,17 @@ const HomeScreen = () => {
     setFollowUser(false);
     swipeUpRef?.current?.openAtHalf(1);
   };
-  const handleMapPress = () => {
+  const handleMapPress = (event) => {
     sliderRef?.current?.close();
     setFollowUser(false); // Désactivez le suivi de l'utilisateur lors de l'interaction avec la carte
+    const { latitude, longitude } = event.nativeEvent.coordinate;
+    setTemporaryMarker({
+      latitude,
+      longitude,
+      name: "",
+      icon: "star", // Type par défaut
+      rating: 0, // Note par défaut
+    });
   };
 
   const handleSwipePositionChange = (newPosition, final = false) => {
@@ -256,6 +268,25 @@ const HomeScreen = () => {
       setFollowUser(true);
     }
   };
+
+  useEffect(() => {
+    if (temporaryMarker) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(blinkOpacity, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(blinkOpacity, {
+            toValue: 0.5,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    }
+  }, [temporaryMarker]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -309,6 +340,18 @@ const HomeScreen = () => {
               </TouchableOpacity>
             </Marker>
           ))}
+          {temporaryMarker && (
+            <Marker
+              coordinate={{
+                latitude: temporaryMarker.latitude,
+                longitude: temporaryMarker.longitude,
+              }}
+            >
+              <Animated.View style={{ opacity: blinkOpacity }}>
+                <FontAwesome name="map-marker" size={30} color="#FF0000" />
+              </Animated.View>
+            </Marker>
+          )}
         </MapView>
         {console.log(
           "parentHeight:",
@@ -359,41 +402,51 @@ const HomeScreen = () => {
             </>
           ) : (
             <>
-              <Text className="text-gray-700 font-semibold top-3 text-xl">
-                Nouveautés à {city}
-              </Text>
+              <View>
+                <Text>Nom du marqueur:</Text>
+                <TextInput
+                  placeholder="Nom"
+                  value={temporaryMarker?.name}
+                  onChangeText={(text) =>
+                    setTemporaryMarker((prev) => ({ ...prev, name: text }))
+                  }
+                />
 
-              <FlatList
-                horizontal
-                data={places}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                  <TouchableOpacity onPress={() => handleMarkerPress(item)}>
-                    <View
-                      style={{
-                        width: 160,
-                        height: 160,
-                        backgroundColor: "white",
-                        borderRadius: 10,
-                        padding: 8,
-                        margin: 8,
-                        shadowColor: "#000",
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.25,
-                        shadowRadius: 3.84,
-                        elevation: 5,
-                      }}
+                <Text>Choisissez une icône:</Text>
+                <FlatList
+                  data={["star", "heart", "flag", "map-marker"]}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      onPress={() =>
+                        setTemporaryMarker((prev) => ({ ...prev, icon: item }))
+                      }
                     >
-                      <FontAwesome6
-                        name={getIconByType(item.type)}
-                        size={20}
-                        color={getColorByType(item.type)}
-                      />
-                      <Text style={{ color: "#4A4A4A" }}>{item.name}</Text>
-                    </View>
-                  </TouchableOpacity>
-                )}
-              ></FlatList>
+                      <FontAwesome name={item} size={30} color="#000" />
+                    </TouchableOpacity>
+                  )}
+                />
+
+                <Text>Note:</Text>
+                {/* <Slider
+                  minimumValue={0}
+                  maximumValue={5}
+                  step={0.5}
+                  value={temporaryMarker?.rating}
+                  onValueChange={(value) =>
+                    setTemporaryMarker((prev) => ({ ...prev, rating: value }))
+                  }
+                /> */}
+
+                <Button
+                  title="Ajouter le marqueur"
+                  onPress={() => {
+                    if (temporaryMarker) {
+                      setPlaces((prev) => [...prev, temporaryMarker]);
+                      setTemporaryMarker(null); // Supprime le marqueur temporaire
+                    }
+                  }}
+                />
+              </View>
             </>
           )}
         </SwipeUp>
