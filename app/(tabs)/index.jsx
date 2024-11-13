@@ -9,6 +9,8 @@ import {
   Animated,
   FlatList,
   Dimensions,
+  TextInput,
+  Button,
 } from "react-native";
 import MapView, {
   Marker,
@@ -325,6 +327,25 @@ const HomeScreen = () => {
     }
   };
 
+  useEffect(() => {
+    if (temporaryMarker) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(blinkOpacity, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(blinkOpacity, {
+            toValue: 0.5,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    }
+  }, [temporaryMarker]);
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar hidden={true} />
@@ -379,6 +400,18 @@ const HomeScreen = () => {
               </TouchableOpacity>
             </Marker>
           ))}
+          {temporaryMarker && (
+            <Marker
+              coordinate={{
+                latitude: temporaryMarker.latitude,
+                longitude: temporaryMarker.longitude,
+              }}
+            >
+              <Animated.View style={{ opacity: blinkOpacity }}>
+                <FontAwesome name="map-marker" size={30} color="#FF0000" />
+              </Animated.View>
+            </Marker>
+          )}
         </MapView>
         <Animated.View
           style={{
@@ -457,6 +490,32 @@ const HomeScreen = () => {
                   </TouchableOpacity>
                 )}
               />
+                      <FontAwesome name={item} size={30} color="#000" />
+                    </TouchableOpacity>
+                  )}
+                />
+
+                <Text>Note:</Text>
+                {/* <Slider
+                  minimumValue={0}
+                  maximumValue={5}
+                  step={0.5}
+                  value={temporaryMarker?.rating}
+                  onValueChange={(value) =>
+                    setTemporaryMarker((prev) => ({ ...prev, rating: value }))
+                  }
+                /> */}
+
+                <Button
+                  title="Ajouter le marqueur"
+                  onPress={() => {
+                    if (temporaryMarker) {
+                      setPlaces((prev) => [...prev, temporaryMarker]);
+                      setTemporaryMarker(null); // Supprime le marqueur temporaire
+                    }
+                  }}
+                />
+              </View>
             </>
           )}
         </SwipeUp>
