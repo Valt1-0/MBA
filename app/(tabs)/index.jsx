@@ -126,10 +126,20 @@ const HomeScreen = () => {
         id: doc.id,
         ...doc.data(),
       }));
-      console.log("placesData:", placesData);
       setAllValues({ places: placesData });
     });
   }, [state.location, state.sliderValue]);
+
+  const getLatLongDelta = (zoom, latitude) => {
+    const LONGITUDE_DELTA = Math.exp(Math.log(360) - zoom * Math.LN2);
+    const ONE_LATITUDE_DEGREE_IN_METERS = 111.32 * 1000;
+    const accurateRegion =
+      LONGITUDE_DELTA *
+      (ONE_LATITUDE_DEGREE_IN_METERS * Math.cos(latitude * (Math.PI / 180)));
+    const LATITUDE_DELTA = accurateRegion / ONE_LATITUDE_DEGREE_IN_METERS;
+
+    return [LONGITUDE_DELTA, LATITUDE_DELTA];
+  };
 
   useEffect(() => {
     (async () => {
@@ -138,7 +148,7 @@ const HomeScreen = () => {
         Alert.alert("Permission to access location was denied");
         return;
       }
-
+      let altitude = 2000;
       let userLocation = await Location.getLastKnownPositionAsync({
         maxAge: 300000,
       });
@@ -146,17 +156,19 @@ const HomeScreen = () => {
       if (!userLocation) {
         userLocation = await Location.getCurrentPositionAsync({});
       }
-
+      console.log("userLocation.coords:", userLocation.coords);
       const userCoords = {
         latitude: userLocation.coords.latitude,
         longitude: userLocation.coords.longitude,
+        latitudeDelta: getLatLongDelta(15, userLocation.coords.latitude),
+        longitudeDelta: getLatLongDelta(15, userLocation.coords.longitude),
       };
 
       setAllValues({ location: userCoords });
 
       if (mapRef.current) {
         setAllValues({ followUser: false });
-        await updateCamera(userCoords, state.pourcentage);
+        await updateCamera(userCoords, state.pourcentage, altitude);
         setAllValues({ followUser: true });
       }
 
@@ -190,8 +202,9 @@ const HomeScreen = () => {
       longitude: state.selectedPlace.longitude,
     };
     const updatePlace = async () => {
-      await updateCamera(userCoords, state.pourcentage);
-      swipeUpRef?.current?.openAtHalf(1);
+      await updateCamera(userCoords, state.pourcentage, 2000).then(() => {
+        swipeUpRef?.current?.openAtHalf(1);
+      });
     };
 
     updatePlace();
@@ -206,7 +219,8 @@ const HomeScreen = () => {
     setAllValues({ followUser: false }); // Désactivez le suivi de l'utilisateur lors de l'interaction avec la carte
   };
 
-  const handleSwipePositionChange = async (newPosition, final = false) => {
+  const handleSwipePositionChange = async (newPosition, final = false,end=false) => {
+    console.log("swipePosition:", newPosition);
     const maxPosition = -(state.parentHeight * 0.5); // Définissez votre valeur maximale ici
     const targetValue = Math.max(
       -(state.parentHeight - newPosition),
@@ -222,173 +236,50 @@ const HomeScreen = () => {
     const newPourcentage = (1 - newPosition / state.parentHeight) / 2;
     setAllValues({ pourcentage: newPourcentage });
 
-    if (state.userLocation && final) {
-      const center = {
-        latitude: state.selectedPlace
-          ? state.selectedPlace.latitude
-          : state.userLocation.latitude,
-        longitude: state.selectedPlace
-          ? state.selectedPlace.longitude
-          : state.userLocation.longitude,
-      };
+    console.log("state.selectedPlace:", state.selectedPlace);
 
-      await updateCamera(center, newPourcentage);
+    if (state.userLocation) {
+      let center = state.userLocation;
+
+      if (state.selectedPlace)
+        center = {
+          latitude: state.selectedPlace.location.latitude,
+          longitude: state.selectedPlace.location.longitude,
+        };
+
+      console.log("center:", center);
+
+      const { northEast, southWest } = await mapRef.current.getMapBoundaries();
+
+      if (!northEast || !southWest) {
+        console.error("Invalid map boundaries");
+        return;
+      }
+
+      const latOffset =
+        (northEast.latitude - southWest.latitude) * newPourcentage;
+
+      const adjustedLatitude = center.latitude - latOffset;
+      center.latitude = adjustedLatitude;
+      console.log("update CAmera :");
+      updateCamera(center, newPourcentage);
     }
   };
 
-  //     function mercatorLatitudeToY(latitude) {
-  //       return Math.round(
-  //         MERCATOR_OFFSET -
-  //           (MERCATOR_RADIUS *
-  //             Math.log(
-  //               (1 + Math.sin(latitude * (Math.PI / 180))) /
-  //                 (1 - Math.sin(latitude * (Math.PI / 180)))
-  //             )) /
-  //             2
-  //       );
-  //     }
-
-  //   function mercatorLongitudeToX(longitude) {
-  //     return Math.round(
-  //       MERCATOR_OFFSET + (MERCATOR_RADIUS * longitude * Math.PI) / 180
-  //     );
-  //   }
-
-  //   function mercatorXToLongitude(x) {
-  //     return (((x - MERCATOR_OFFSET) / MERCATOR_RADIUS) * 180) / Math.PI;
-  //   }
-
-  //   function mercatorYToLatitude(y) {
-  //     return (
-  //       ((Math.PI / 2 -
-  //         2 * Math.atan(Math.exp((y - MERCATOR_OFFSET) / MERCATOR_RADIUS))) *
-  //         180) /
-  //       Math.PI
-  //     );
-  //   }
-
-  //   function mercatorAdjustLatitudeByOffsetAndZoom(latitude, offset, zoom) {
-  //     return mercatorYToLatitude(
-  //       mercatorLatitudeToY(latitude) + (offset << (21 - zoom))
-  //     );
-  //   }
-
-  //   function mercatorAdjustLongitudeByOffsetAndZoom(longitude, offset, zoom) {
-  //     return mercatorXToLongitude(
-  //       mercatorLongitudeToX(longitude) + (offset << (21 - zoom))
-  //     );
-  //   }
-
-  // function mercatorDegreeDeltas(latitude, longitude, width, height, zoom) {
-  //   if (!zoom) {
-  //     zoom = 20;
-  //   }
-
-  //   const deltaX = width / 2;
-  //   const deltaY = height / 4;
-
-  //   const northLatitude = mercatorAdjustLatitudeByOffsetAndZoom(
-  //     latitude,
-  //     deltaY * -1,
-  //     zoom
-  //   );
-  //   const westLongitude = mercatorAdjustLongitudeByOffsetAndZoom(
-  //     longitude,
-  //     deltaX * -1,
-  //     zoom
-  //   );
-  //   const southLatitude = mercatorAdjustLatitudeByOffsetAndZoom(
-  //     latitude,
-  //     deltaY,
-  //     zoom
-  //   );
-  //   const eastLongitude = mercatorAdjustLongitudeByOffsetAndZoom(
-  //     longitude,
-  //     deltaY,
-  //     zoom
-  //   );
-
-  //   const latitudeDelta = Math.abs(northLatitude - southLatitude);
-  //   const longitudeDelta = Math.abs(eastLongitude - westLongitude);
-
-  //   return { latitudeDelta, longitudeDelta };
-  // }
-
-  //   const getOffset = (zoom, heading, screenRatio) => {
-  //     const BASE_OFFSET = -0.005 * screenRatio; // Ajuster   si nécessaire
-
-  //     const offset = BASE_OFFSET / Math.pow(2, zoom); // Ajustement basé sur le zoom
-  //     const radHeading = heading * (Math.PI / 180); // Convertir le heading en radians
-
-  //     // Calculer le décalage basé sur le heading
-  //     const offsetLatitude = offset * Math.cos(radHeading);
-  //     const offsetLongitude = offset * Math.sin(radHeading);
-
-  //     // Inverser le décalage pour le garder en bas de l'écran
-  //     return {
-  //       offsetLatitude: offsetLatitude,
-  //       offsetLongitude: offsetLongitude,
-  //     };
-  //   };
-
-  const calculateZoomLevel = (northEast, southWest, mapWidth, mapHeight) => {
-    const WORLD_DIM = { height: 256, width: 256 };
-    const ZOOM_MAX = 21;
-
-    const latFraction = (lat) => {
-      return (
-        (1 -
-          Math.log(
-            Math.tan((lat * Math.PI) / 180) +
-              1 / Math.cos((lat * Math.PI) / 180)
-          ) /
-            Math.PI) /
-        2
-      );
+  const updateCamera = async (center, lastPourcentage, altitude) => {
+    const userCoords = center;
+    const cameraConfig = {
+      center: userCoords,
+      pitch: 0,
+      heading: 0,
+      zoom: Platform.OS === "ios" ? 15 : 15,
     };
 
-    const latDiff =
-      latFraction(northEast.latitude) - latFraction(southWest.latitude);
-    const lngDiff = (northEast.longitude - southWest.longitude) / 360;
-
-    if (latDiff <= 0 || lngDiff <= 0) {
-      return ZOOM_MAX; // Retourne le zoom maximum si les différences sont invalides
+    if (altitude !== undefined) {
+      cameraConfig.altitude = altitude;
     }
 
-    const latZoom = Math.log(mapHeight / WORLD_DIM.height / latDiff) / Math.LN2;
-    const lngZoom = Math.log(mapWidth / WORLD_DIM.width / lngDiff) / Math.LN2;
-
-    return Math.min(latZoom, lngZoom, ZOOM_MAX);
-  };
-
-  const getLatLongDelta = (zoom: number, latitude: number): number[] => {
-    const LONGITUDE_DELTA = Math.exp(Math.log(360) - zoom * Math.LN2);
-    const ONE_LATITUDE_DEGREE_IN_METERS = 111.32 * 1000;
-    const accurateRegion =
-      LONGITUDE_DELTA *
-      (ONE_LATITUDE_DEGREE_IN_METERS * Math.cos(latitude * (Math.PI / 180)));
-    const LATITUDE_DELTA = accurateRegion / ONE_LATITUDE_DEGREE_IN_METERS;
-
-    return [LONGITUDE_DELTA, LATITUDE_DELTA];
-  };
-
-  const updateCamera = async (center, pourcentage) => {
-    const { northEast, southWest } = await mapRef.current.getMapBoundaries();
-
-    if (!northEast || !southWest) {
-      console.error("Invalid map boundaries");
-      return;
-    }
-
-    const latOffset = (northEast.latitude - southWest.latitude) * pourcentage;
-    const adjustedLatitude = center.latitude - latOffset;
-
-    const userCoords = {
-      latitude: adjustedLatitude,
-      longitude: center.longitude,
-    };
-
-    await mapRef.current.animateCamera({center:userCoords,zoom:15,pitch:0},350);
+    await mapRef.current.animateCamera(cameraConfig, { duration: 10 });
   };
 
   const handleMyLocationPress = async () => {

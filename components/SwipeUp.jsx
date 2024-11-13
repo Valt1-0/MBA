@@ -29,7 +29,7 @@ const SwipeUp = forwardRef(
     const minClosedPosition = positionValues[0]; // Position just above the tab bar
     const maxOpenPosition = positionValues[positions.length - 1]; // Maximum open position (80% screen height)
 
-    const handlePostionChange = (position, duration) => {
+    const handlePostionChange = (position, duration, end = false) => {
       if (duration === 0) {
         translateY.value = position;
       } else {
@@ -37,7 +37,7 @@ const SwipeUp = forwardRef(
       }
 
       if (onPositionChange) {
-        onPositionChange(position, duration > 0 ? true : false);
+        onPositionChange(position, duration > 0 ? true : false, end);
       }
     };
 
@@ -58,7 +58,7 @@ const SwipeUp = forwardRef(
         if (pos !== undefined) {
           position = positionValues[pos];
         }
-        handlePostionChange(position, 300);
+        handlePostionChange(position, 300,true);
         //translateY.value = withTiming(position, { duration: 300 });
 
         setIsFullyOpen(false);
@@ -127,7 +127,7 @@ const SwipeUp = forwardRef(
       }
       // Définir la position finale
 
-      handlePostionChange(closestPosition, 300);
+      handlePostionChange(closestPosition, 300,true);
       //translateY.value = withTiming(closestPosition, { duration: 300 });
 
       // Mettre à jour l'état en fonction de la position finale
