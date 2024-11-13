@@ -13,14 +13,13 @@ import {
   Button,
 } from "react-native";
 import MapView, {
-  Callout,
   Marker,
   PROVIDER_GOOGLE,
   PROVIDER_DEFAULT,
 } from "react-native-maps";
 import * as Location from "expo-location";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { FontAwesome, Entypo, FontAwesome6 } from "@expo/vector-icons";
+import { FontAwesome, FontAwesome6 } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { getColorByType, getIconByType } from "../../utils/functions";
 import { db } from "../../utils/firebase";
@@ -41,21 +40,33 @@ import { useSegments, usePathname } from "expo-router";
 import RangeSlider from "../../components/Slider";
 
 const HomeScreen = () => {
-  const [places, setPlaces] = useState([]);
-  const [selectedPlace, setSelectedPlace] = useState(null);
-  const [city, setCity] = useState(null);
+  const [state, setState] = useState({
+    places: [],
+    selectedPlace: null,
+    city: null,
+    followUser: true,
+    parentHeight: 0,
+    sliderValue: 1,
+    location: null,
+    userLocation: null,
+    pourcentage: 0,
+  });
+  const MERCATOR_OFFSET = Math.pow(2, 28);
+  const MERCATOR_RADIUS = MERCATOR_OFFSET / Math.PI;
+  const { width, height } = Dimensions.get("window");
   const mapRef = useRef(null);
-  const [followUser, setFollowUser] = useState(true);
-  const [parentHeight, setParentHeight] = useState(0);
   const swipeUpRef = useRef(null);
-  const segments = useSegments();
-  const pathName = usePathname();
-  const [sliderValue, setSliderValue] = useState(1);
-  const [location, setLocation] = useState(null);
   const sliderRef = useRef(null);
   const buttonAnim = useRef(new Animated.Value(0)).current;
-  const [temporaryMarker, setTemporaryMarker] = useState(null);
-  const blinkOpacity = useRef(new Animated.Value(0.5)).current;
+  const segments = useSegments();
+  const pathName = usePathname();
+
+  const setAllValues = (newValues) => {
+    setState((prevState) => ({
+      ...prevState,
+      ...newValues,
+    }));
+  };
 
   async function queryNearbyPlaces(center, radiusInM) {
     const bounds = geohashQueryBounds(center, radiusInM);
@@ -107,20 +118,30 @@ const HomeScreen = () => {
   }, []);
 
   useEffect(() => {
-    if (!location) return;
-    console.log("location:", location);
-    const center = [location?.latitude, location?.longitude];
-    const radiusInM = sliderValue * 100; // Rayon en mètres
+    if (!state.location) return;
+    console.log("location:", state.location);
+    const center = [state.location?.latitude, state.location?.longitude];
+    const radiusInM = state.sliderValue * 100; // Rayon en mètres
 
     queryNearbyPlaces(center, radiusInM).then((docs) => {
       const placesData = docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-      console.log("placesData:", placesData);
-      setPlaces(placesData);
+      setAllValues({ places: placesData });
     });
-  }, [location, sliderValue]);
+  }, [state.location, state.sliderValue]);
+
+  const getLatLongDelta = (zoom, latitude) => {
+    const LONGITUDE_DELTA = Math.exp(Math.log(360) - zoom * Math.LN2);
+    const ONE_LATITUDE_DEGREE_IN_METERS = 111.32 * 1000;
+    const accurateRegion =
+      LONGITUDE_DELTA *
+      (ONE_LATITUDE_DEGREE_IN_METERS * Math.cos(latitude * (Math.PI / 180)));
+    const LATITUDE_DELTA = accurateRegion / ONE_LATITUDE_DEGREE_IN_METERS;
+
+    return [LONGITUDE_DELTA, LATITUDE_DELTA];
+  };
 
   useEffect(() => {
     (async () => {
@@ -129,7 +150,7 @@ const HomeScreen = () => {
         Alert.alert("Permission to access location was denied");
         return;
       }
-
+      let altitude = 2000;
       let userLocation = await Location.getLastKnownPositionAsync({
         maxAge: 300000,
       });
@@ -137,27 +158,20 @@ const HomeScreen = () => {
       if (!userLocation) {
         userLocation = await Location.getCurrentPositionAsync({});
       }
-
+      console.log("userLocation.coords:", userLocation.coords);
       const userCoords = {
         latitude: userLocation.coords.latitude,
         longitude: userLocation.coords.longitude,
-        latitudeDelta: 0.38,
-        longitudeDelta: 0.28,
+        latitudeDelta: getLatLongDelta(15, userLocation.coords.latitude),
+        longitudeDelta: getLatLongDelta(15, userLocation.coords.longitude),
       };
 
-      setLocation(userCoords);
+      setAllValues({ location: userCoords });
 
       if (mapRef.current) {
-        setFollowUser(false);
-        mapRef.current.animateCamera(
-          {
-            altitude: 2000,
-            center: userCoords,
-            zoom: Platform.OS === "ios" ? 0 : 19,
-          },
-          { duration: 350 }
-        );
-        setFollowUser(true);
+        setAllValues({ followUser: false });
+        await updateCamera(userCoords, state.pourcentage, altitude);
+        setAllValues({ followUser: true });
       }
 
       const reverseGeocode = async (latitude, longitude) => {
@@ -175,7 +189,7 @@ const HomeScreen = () => {
 
       if (locationDetails.length > 0) {
         const { city } = locationDetails[0];
-        setCity(city);
+        setAllValues({ city });
         // console.log("Nearest city:", city);
       } else {
         console.log("No city found for these coordinates.");
@@ -183,60 +197,91 @@ const HomeScreen = () => {
     })();
   }, []);
 
-  const handleMarkerPress = (place) => {
-    setSelectedPlace(place);
-
-    // Obtenez la hauteur de l'écran
-    const screenHeight = parentHeight;
-
-    // Calculez la hauteur de votre composant de swipe lorsqu'il est ouvert à 50%
-    const swipeHeight = screenHeight * -0.3;
-
-    // Calculez le décalage en latitude en fonction de la hauteur du swipe
-    const latitudeDelta = 0.01; // Utilisé pour le niveau de zoom
-    const offset = (swipeHeight / screenHeight) * latitudeDelta;
-
-    // Ajustez la latitude pour décaler la région vers le haut
-    const adjustedLatitude = place.latitude + offset;
-
+  useEffect(() => {
+    if (!state.selectedPlace) return;
     const userCoords = {
-      latitude: adjustedLatitude,
-      longitude: place.longitude,
+      latitude: state.selectedPlace.latitude,
+      longitude: state.selectedPlace.longitude,
+    };
+    const updatePlace = async () => {
+      await updateCamera(userCoords, state.pourcentage, 2000).then(() => {
+        swipeUpRef?.current?.openAtHalf(1);
+      });
     };
 
-    mapRef.current.animateCamera(
-      {
-        altitude: 2000,
-        center: userCoords,
-        zoom: Platform.OS === "ios" ? 0 : 19,
-      },
-      { duration: 350 }
-    );
-    setFollowUser(false);
-    swipeUpRef?.current?.openAtHalf(1);
-  };
-  const handleMapPress = (event) => {
-    sliderRef?.current?.close();
-    setFollowUser(false); // Désactivez le suivi de l'utilisateur lors de l'interaction avec la carte
-    const { latitude, longitude } = event.nativeEvent.coordinate;
-    setTemporaryMarker({
-      latitude,
-      longitude,
-      name: "",
-      icon: "star", // Type par défaut
-      rating: 0, // Note par défaut
-    });
+    updatePlace();
+  }, [state.selectedPlace]);
+
+  const handleMarkerPress = async (place) => {
+    setAllValues({ selectedPlace: place, followUser: false });
   };
 
-  const handleSwipePositionChange = (newPosition, final = false) => {
-    const maxPosition = -(parentHeight * 0.5); // Définissez votre valeur maximale ici
-    const targetValue = Math.max(-(parentHeight - newPosition), maxPosition);
+  const handleMapPress = () => {
+    sliderRef?.current?.close();
+    setAllValues({ followUser: false }); // Désactivez le suivi de l'utilisateur lors de l'interaction avec la carte
+  };
+
+  const handleSwipePositionChange = async (newPosition, final = false,end=false) => {
+    console.log("swipePosition:", newPosition);
+    const maxPosition = -(state.parentHeight * 0.5); // Définissez votre valeur maximale ici
+    const targetValue = Math.max(
+      -(state.parentHeight - newPosition),
+      maxPosition
+    );
 
     Animated.timing(buttonAnim, {
       toValue: targetValue, // La position verticale en fonction du swipe
       duration: final ? 300 : 0, // Durée à 0 pour suivre en temps réel
       useNativeDriver: false,
     }).start();
+
+    const newPourcentage = (1 - newPosition / state.parentHeight) / 2;
+    setAllValues({ pourcentage: newPourcentage });
+
+    console.log("state.selectedPlace:", state.selectedPlace);
+
+    if (state.userLocation) {
+      let center = state.userLocation;
+
+      if (state.selectedPlace)
+        center = {
+          latitude: state.selectedPlace.location.latitude,
+          longitude: state.selectedPlace.location.longitude,
+        };
+
+      console.log("center:", center);
+
+      const { northEast, southWest } = await mapRef.current.getMapBoundaries();
+
+      if (!northEast || !southWest) {
+        console.error("Invalid map boundaries");
+        return;
+      }
+
+      const latOffset =
+        (northEast.latitude - southWest.latitude) * newPourcentage;
+
+      const adjustedLatitude = center.latitude - latOffset;
+      center.latitude = adjustedLatitude;
+      console.log("update CAmera :");
+      updateCamera(center, newPourcentage);
+    }
+  };
+
+  const updateCamera = async (center, lastPourcentage, altitude) => {
+    const userCoords = center;
+    const cameraConfig = {
+      center: userCoords,
+      pitch: 0,
+      heading: 0,
+      zoom: Platform.OS === "ios" ? 15 : 15,
+    };
+
+    if (altitude !== undefined) {
+      cameraConfig.altitude = altitude;
+    }
+
+    await mapRef.current.animateCamera(cameraConfig, { duration: 10 });
   };
 
   const handleMyLocationPress = async () => {
@@ -248,24 +293,37 @@ const HomeScreen = () => {
       userLocation = await Location.getCurrentPositionAsync({});
     }
 
+    setAllValues({
+      userLocation: {
+        latitude: userLocation.coords.latitude,
+        longitude: userLocation.coords.longitude,
+      },
+    });
+
     const userCoords = {
       latitude: userLocation.coords.latitude,
       longitude: userLocation.coords.longitude,
-      latitudeDelta: 0.38,
-      longitudeDelta: 0.28,
     };
 
     if (mapRef.current) {
-      setFollowUser(false);
-      mapRef.current.animateCamera(
-        {
-          altitude: 2000,
-          center: userCoords,
-          zoom: Platform.OS === "ios" ? 0 : 19,
-        },
-        { duration: 350 }
-      );
-      setFollowUser(true);
+      await updateCamera(userCoords, state.pourcentage);
+      setAllValues({ followUser: true });
+    }
+  };
+
+  const handleUserLocationChange = async (event) => {
+    const { latitude, longitude } = event.nativeEvent.coordinate;
+
+    setAllValues({ userLocation: { latitude, longitude } });
+
+    if (state.followUser) {
+      const center = {
+        latitude,
+        longitude,
+      };
+      if (state.pourcentage >= 0.1)
+        await updateCamera(center, state.pourcentage);
+      else await updateCamera(center, 0);
     }
   };
 
@@ -295,17 +353,17 @@ const HomeScreen = () => {
         className={"flex-1 h-full"}
         onLayout={(event) => {
           const { height } = event.nativeEvent.layout;
-          setParentHeight(height);
+          setAllValues({ parentHeight: height });
         }}
       >
         <MapView
           ref={mapRef}
           customMapStyle={customMapStyle}
           style={{ width: "100%", height: "100%" }}
-          followsUserLocation={followUser}
+          followsUserLocation={false}
           showsUserLocation={true}
           onPress={() => {
-            setSelectedPlace(null);
+            setAllValues({ selectedPlace: null });
           }}
           showsIndoors={false}
           showsTraffic={false}
@@ -317,8 +375,10 @@ const HomeScreen = () => {
           provider={
             Platform.OS === "android" ? PROVIDER_GOOGLE : PROVIDER_DEFAULT
           }
+          onUserLocationChange={handleUserLocationChange}
+          loadingEnabled={true}
         >
-          {places.map((place) => (
+          {state.places.map((place) => (
             <Marker
               key={place.id}
               tracksViewChanges={false}
@@ -353,19 +413,12 @@ const HomeScreen = () => {
             </Marker>
           )}
         </MapView>
-        {console.log(
-          "parentHeight:",
-          -(parentHeight * 0.52),
-          buttonAnim._value,
-          buttonAnim._value < -(parentHeight * 0.4)
-        )}
-
         <Animated.View
           style={{
             transform: [{ translateY: buttonAnim }],
           }}
         >
-          {Platform.OS === "ios" && !followUser && (
+          {Platform.OS === "ios" && !state.followUser && (
             <TouchableOpacity
               className="absolute bottom-10 left-5"
               onPress={handleMyLocationPress}
@@ -380,47 +433,63 @@ const HomeScreen = () => {
           )}
           <RangeSlider
             ref={sliderRef}
-            onSlidingComplete={(value) => setSliderValue(value)}
+            onSlidingComplete={(value) => setAllValues({ sliderValue: value })}
           />
         </Animated.View>
 
         <SwipeUp
           ref={swipeUpRef}
-          parentHeight={parentHeight}
+          parentHeight={state.parentHeight}
           onPositionChange={handleSwipePositionChange}
           positions={[10, 50, 100]} // Positions en pourcentage
         >
           <View className="h-1 w-20 bg-gray-300 rounded-full self-center mb-2 top-1" />
-          {selectedPlace ? (
+          {state.selectedPlace ? (
             <>
               <Text className="text-gray-500 text-center">
-                {selectedPlace.name}
+                {state.selectedPlace.name}
               </Text>
               <Text className="text-gray-500 text-center">
-                {selectedPlace.description}
+                {state.selectedPlace.description}
               </Text>
             </>
           ) : (
             <>
-              <View>
-                <Text>Nom du marqueur:</Text>
-                <TextInput
-                  placeholder="Nom"
-                  value={temporaryMarker?.name}
-                  onChangeText={(text) =>
-                    setTemporaryMarker((prev) => ({ ...prev, name: text }))
-                  }
-                />
+              <Text className="text-gray-700 font-semibold top-3 text-xl">
+                Nouveautés à {state.city}
+              </Text>
 
-                <Text>Choisissez une icône:</Text>
-                <FlatList
-                  data={["star", "heart", "flag", "map-marker"]}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      onPress={() =>
-                        setTemporaryMarker((prev) => ({ ...prev, icon: item }))
-                      }
+              <FlatList
+                horizontal
+                data={state.places}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                  <TouchableOpacity onPress={() => handleMarkerPress(item)}>
+                    <View
+                      style={{
+                        width: 160,
+                        height: 160,
+                        backgroundColor: "white",
+                        borderRadius: 10,
+                        padding: 8,
+                        margin: 8,
+                        shadowColor: "#000",
+                        shadowOffset: { width: 0, height: 2 },
+                        shadowOpacity: 0.25,
+                        shadowRadius: 3.84,
+                        elevation: 5,
+                      }}
                     >
+                      <FontAwesome6
+                        name={getIconByType(item.type)}
+                        size={20}
+                        color={getColorByType(item.type)}
+                      />
+                      <Text style={{ color: "#4A4A4A" }}>{item.name}</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+              />
                       <FontAwesome name={item} size={30} color="#000" />
                     </TouchableOpacity>
                   )}
@@ -454,5 +523,7 @@ const HomeScreen = () => {
     </GestureHandlerRootView>
   );
 };
+
 const styles = StyleSheet.create({});
+
 export default HomeScreen;
