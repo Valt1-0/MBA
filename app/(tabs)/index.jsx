@@ -246,7 +246,7 @@ const HomeScreen = () => {
 
     console.log("state.selectedPlace:", state.selectedPlace);
 
-    if (state.userLocation) {
+    if (state.userLocation && end) {
       let center = state.userLocation;
 
       if (state.selectedPlace)
@@ -287,7 +287,7 @@ const HomeScreen = () => {
       cameraConfig.altitude = altitude;
     }
 
-    await mapRef.current.animateCamera(cameraConfig, { duration: 10 });
+    await mapRef.current.animateCamera(cameraConfig, { duration: 350 });
   };
 
   const handleMyLocationPress = async () => {
