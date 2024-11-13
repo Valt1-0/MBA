@@ -10,7 +10,7 @@ import {
   FlatList,
   Dimensions,
   TextInput,
-  Button,
+  ScrollView,
 } from "react-native";
 import MapView, {
   Marker,
@@ -60,8 +60,34 @@ const HomeScreen = () => {
   const buttonAnim = useRef(new Animated.Value(0)).current;
   const segments = useSegments();
   const pathName = usePathname();
-  const [temporaryMarker, setTemporaryMarker] = useState(null); // Marqueur temporaire
-  const blinkOpacity = useRef(new Animated.Value(0.5)).current; // Animation de clignotement
+
+  const [tempMarker, setTempMarker] = useState(null);
+  const [isAddingMarker, setIsAddingMarker] = useState(false);
+  const [markerForm, setMarkerForm] = useState({
+    name: "",
+    type: "",
+    rating: 0,
+  });
+  const blinkAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (tempMarker) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(blinkAnim, {
+            toValue: 0.4,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(blinkAnim, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    }
+  }, [tempMarker]);
 
   const setAllValues = (newValues) => {
     setState((prevState) => ({
@@ -218,9 +244,22 @@ const HomeScreen = () => {
     setAllValues({ selectedPlace: place, followUser: false });
   };
 
-  const handleMapPress = () => {
+  const handleMapPress = (e) => {
     sliderRef?.current?.close();
     setAllValues({ followUser: false }); // Désactivez le suivi de l'utilisateur lors de l'interaction avec la carte
+
+    if (!e.nativeEvent || !e.nativeEvent.coordinate) return;
+
+    const { latitude, longitude } = e.nativeEvent.coordinate;
+
+    // Vérifier que les coordonnées sont valides
+    if (typeof latitude === "number" && typeof longitude === "number") {
+      setTempMarker({
+        latitude: parseFloat(latitude),
+        longitude: parseFloat(longitude),
+      });
+      setIsAddingMarker(true);
+    }
   };
 
   const handleSwipePositionChange = async (
@@ -333,25 +372,6 @@ const HomeScreen = () => {
     }
   };
 
-  useEffect(() => {
-    if (temporaryMarker) {
-      Animated.loop(
-        Animated.sequence([
-          Animated.timing(blinkOpacity, {
-            toValue: 1,
-            duration: 500,
-            useNativeDriver: true,
-          }),
-          Animated.timing(blinkOpacity, {
-            toValue: 0.5,
-            duration: 500,
-            useNativeDriver: true,
-          }),
-        ])
-      ).start();
-    }
-  }, [temporaryMarker]);
-
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar hidden={true} />
@@ -406,17 +426,14 @@ const HomeScreen = () => {
               </TouchableOpacity>
             </Marker>
           ))}
-          {temporaryMarker && (
-            <Marker
+          {tempMarker && tempMarker.latitude && tempMarker.longitude && (
+            <Marker.Animated
               coordinate={{
-                latitude: temporaryMarker.latitude,
-                longitude: temporaryMarker.longitude,
+                latitude: tempMarker.latitude,
+                longitude: tempMarker.longitude,
               }}
-            >
-              <Animated.View style={{ opacity: blinkOpacity }}>
-                <FontAwesome name="map-marker" size={30} color="#FF0000" />
-              </Animated.View>
-            </Marker>
+              opacity={blinkAnim}
+            />
           )}
         </MapView>
         <Animated.View
@@ -451,41 +468,58 @@ const HomeScreen = () => {
         >
           <View className="h-1 w-20 bg-gray-300 rounded-full self-center mb-2 top-1" />
           {state.selectedPlace ? (
+            // Condition 1 : Place sélectionnée
             <>
-              <Text className="text-gray-500 text-center">
+              <Text className="text-gray-700 font-semibold top-3 text-xl">
                 {state.selectedPlace.name}
               </Text>
-              <Text className="text-gray-500 text-center">
+              <Text className="text-gray-500">
                 {state.selectedPlace.description}
               </Text>
             </>
+          ) : isAddingMarker ? (
+            // Condition 2 : Ajout d'un marker
+            <View className="p-4">
+              <TextInput
+                placeholder="Nom du lieu"
+                value={markerForm.name}
+                onChangeText={(text) =>
+                  setMarkerForm({ ...markerForm, name: text })
+                }
+              />
+
+              <ScrollView horizontal className="flex flex-row pb-2">
+                {["person-walking", "food", "park", "museum"].map((type) => (
+                  <TouchableOpacity
+                    key={type}
+                    onPress={() => setMarkerForm({ ...markerForm, type })}
+                    className={`
+        mx-2 p-3 rounded-full border border-gray-300
+        ${markerForm.type === type ? "bg-gray-100 border-gray-500" : ""}
+      `}
+                  >
+                    <FontAwesome6
+                      name={getIconByType(type)}
+                      size={20}
+                      color={getColorByType(type)}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
           ) : (
+            // État par défaut : Liste des nouveautés
             <>
               <Text className="text-gray-700 font-semibold top-3 text-xl">
                 Nouveautés à {state.city}
               </Text>
-
               <FlatList
                 horizontal
                 data={state.places}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
                   <TouchableOpacity onPress={() => handleMarkerPress(item)}>
-                    <View
-                      style={{
-                        width: 160,
-                        height: 160,
-                        backgroundColor: "white",
-                        borderRadius: 10,
-                        padding: 8,
-                        margin: 8,
-                        shadowColor: "#000",
-                        shadowOffset: { width: 0, height: 2 },
-                        shadowOpacity: 0.25,
-                        shadowRadius: 3.84,
-                        elevation: 5,
-                      }}
-                    >
+                    <View style={styles.placeCard}>
                       <FontAwesome6
                         name={getIconByType(item.type)}
                         size={20}
