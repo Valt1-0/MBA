@@ -10,8 +10,11 @@ import {
   deleteDoc,
   doc,
 } from "firebase/firestore";
-import { geohashQueryBounds, distanceBetween, geohashForLocation } from "geofire-common";
-
+import {
+  geohashQueryBounds,
+  distanceBetween,
+  geohashForLocation,
+} from "geofire-common";
 
 // Fonction pour déterminer la couleur selon le type de lieu
 const getColorByType = (type) => {
@@ -88,6 +91,8 @@ async function queryNearbyPlaces(center, radiusInM) {
 /* Fonction pour ajouter un lieu */
 async function addPlace(place, userInfo) {
   try {
+    console.log("place : " + JSON.stringify(place.type));
+    
     // Validation des données requises
     if (!place.name || !place.type || !place.latitude || !place.longitude) {
       throw new Error("Informations manquantes");
@@ -100,6 +105,8 @@ async function addPlace(place, userInfo) {
 
     // Création du geohash pour la recherche géographique
     const geohash = geohashForLocation([place.latitude, place.longitude]);
+
+    console.log("place : " + place);
 
     // Structure des données à envoyer
     const placeData = {
