@@ -189,7 +189,6 @@ const HomeScreen = () => {
     const MIN_DELAY = 60000; // 30 secondes en millisecondes
 
     if (timeSinceLastQuery < MIN_DELAY) {
-      console.log("Délai minimum non atteint");
       return;
     }
 
@@ -214,7 +213,6 @@ const HomeScreen = () => {
   // Modifier la fonction performQuery
   const performQuery = async () => {
     try {
-      console.log("Performing query...");
       const center = [
         state.userLocation.latitude,
         state.userLocation.longitude,
@@ -307,7 +305,6 @@ const HomeScreen = () => {
 
   const handleMapPress = async (e) => {
     setAllValues({ selectedPlace: null, followUser: false });
-    console.log(e.nativeEvent);
     if (!e.nativeEvent || !e.nativeEvent?.coordinate) return;
 
     const { latitude, longitude } = e.nativeEvent.coordinate;
@@ -325,7 +322,6 @@ const HomeScreen = () => {
     final = false,
     end = false
   ) => {
-    console.log("Position", newPosition);
     const maxPosition = -(state.parentHeight * 0.5);
     const targetValue = Math.max(
       -(state.parentHeight - newPosition),

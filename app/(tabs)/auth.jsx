@@ -49,7 +49,6 @@ const AuthScreen = () => {
           setUser(userCredential.user);
           setSuccess("Logged in successfully!");
           setError("");
-          console.log(userCredential.user?.email);
         })
         .catch((error) => {
           setError(error.message);
