@@ -474,10 +474,52 @@ const HomeScreen = () => {
             </>
           ) : isAddingMarker ? (
             // Condition 2 : Ajout d'un marker
-            <View className="">
-              <Text className="text-gray-700 font-semibold text-xl text-center">
-                Ajouter un lieu
-              </Text>
+            <View className="top-4">
+              <View className="flex flex-row items-center justify-between px-4">
+                <TouchableOpacity className="flex items-center justify-center w-8 h-8 border border-[#cc514a] rounded-lg">
+                  <FontAwesome6
+                    name="trash"
+                    size={17}
+                    color="#cc514a"
+                    onPress={() => {
+                      setAllValues({
+                        isAddingMarker: false,
+                        MarkerForm: {
+                          placeholder: "Nom de votre Adresse",
+                          type: "",
+                          rating: 0,
+                        },
+                        tempMarker: null,
+                      });
+                      swipeUpRef.current?.openAtHalf(0);
+                    }}
+                  />
+                </TouchableOpacity>
+
+                <Text className="text-gray-700 font-semibold text-xl">
+                  Ajouter un lieu
+                </Text>
+
+                <TouchableOpacity className="flex items-center justify-center w-8 h-8 border border-[#4ACC4A] rounded-lg">
+                  <FontAwesome6
+                    name="check"
+                    size={17}
+                    color="#4ACC4A"
+                    onPress={() => {
+                      setAllValues({
+                        isAddingMarker: false,
+                        MarkerForm: {
+                          placeholder: "Nom de votre Adresse",
+                          type: "",
+                          rating: 0,
+                        },
+                        tempMarker: null,
+                      });
+                      swipeUpRef.current?.openAtHalf(0);
+                    }}
+                  />
+                </TouchableOpacity>
+              </View>
               <TextInput
                 className="border border-gray-300 rounded-lg p-2 mt-4"
                 placeholder={markerForm.placeholder}
@@ -523,22 +565,6 @@ const HomeScreen = () => {
                   </TouchableOpacity>
                 ))}
               </ScrollView>
-              <Button
-                title="Ajouter"
-                onPress={() => {
-                  setAllValues({
-                    isAddingMarker: false,
-                    MarkerForm: {
-                      name: "",
-                      placeholder: "Nom de votre Adresse",
-                      type: "",
-                      rating: 0,
-                    },
-                    tempMarker: null,
-                  });
-                  swipeUpRef.current?.openAtHalf(0);
-                }}
-              />
             </View>
           ) : (
             // État par défaut : Liste des nouveautés
