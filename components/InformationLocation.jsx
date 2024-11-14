@@ -9,7 +9,6 @@ export default function ContactInfo({ selectedPlace }) {
   const { userInfo } = useContext(UserContext);
 
   useEffect(() => {
-    console.log("selectedPlace", selectedPlace);
     if (selectedPlace) {
       const { longitude, latitude } = selectedPlace;
       const apiKey = process.env.EXPO_PUBLIC_OPEN_ROUTE_SERVICE_API_KEY;

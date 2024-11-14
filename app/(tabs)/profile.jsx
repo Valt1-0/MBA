@@ -36,8 +36,6 @@ export default function Profile() {
   }, [userInfo]);
 
   const handleUpdate = () => {
-    // Logic to update user information
-    console.log("User information updated:", { displayName, email, password });
     // Update the user context
     updateProfile(auth.currentUser, {
       displayName: displayName,

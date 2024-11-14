@@ -104,8 +104,6 @@ async function addPlace(place, userInfo) {
     // Création du geohash pour la recherche géographique
     const geohash = geohashForLocation([place.latitude, place.longitude]);
 
-    console.log("place : " + place);
-
     const placeData = {
       name: place.name.trim(),
       type: place.type,
