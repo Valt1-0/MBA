@@ -638,223 +638,228 @@ const HomeScreen = () => {
               />
             </>
           ) : isAddingMarker ? (
-            // isAuthenticated ? (
-            // Condition 2 : Ajout d'un marker
-            <View className="top-4">
-              <View className="flex flex-row items-center justify-between px-4">
-                <TouchableOpacity className="flex items-center justify-center w-8 h-8 border border-[#cc514a] rounded-lg">
-                  <FontAwesome6
-                    name="trash"
-                    size={17}
-                    color="#cc514a"
-                    onPress={() => {
-                      setAllValues({
-                        isAddingMarker: false,
-                        MarkerForm: {
-                          type: "",
-                          rating: 0,
-                        },
-                        tempMarker: null,
-                      });
-                      swipeUpRef.current?.openAtHalf(0);
-                    }}
-                  />
-                </TouchableOpacity>
-
-                <Text className="text-gray-700 font-semibold text-xl">
-                  Ajouter un lieu
-                </Text>
-
-                <TouchableOpacity className="flex items-center justify-center w-8 h-8 border border-[#4ACC4A] rounded-lg">
-                  <FontAwesome6
-                    name="check"
-                    size={17}
-                    color="#4ACC4A"
-                    onPress={() => {
-                      handleAddPlace();
-                    }}
-                  />
-                </TouchableOpacity>
-              </View>
-              <TextInput
-                className="border border-gray-300 rounded-lg text-lg p-2 mt-4 mx-10 text-center"
-                placeholder="Nom de votre Adresse"
-                value={markerForm.name}
-                onChangeText={(text) =>
-                  setAllValues({
-                    markerForm: { ...markerForm, name: text },
-                  })
-                }
-              />
-              <TextInput
-                className="border border-gray-300 rounded-lg text-lg p-2 mt-4 mx-10 text-center"
-                placeholder="Description de votre Adresse"
-                multiline
-                numberOfLines={3}
-                value={markerForm.description}
-                onChangeText={(text) =>
-                  setAllValues({
-                    markerForm: { ...markerForm, description: text },
-                  })
-                }
-              />
-
-              <ScrollView
-                horizontal
-                className="flex flex-row mt-4 mb-2 h-16"
-                showsHorizontalScrollIndicator
-              >
-                {[
-                  "Tourism",
-                  "Museum",
-                  "Cinema",
-                  "Theater",
-                  "Park",
-                  "Education",
-                  "Jedi",
-                ].map((type) => (
-                  <TouchableOpacity
-                    key={type}
-                    onPress={() =>
-                      setAllValues({
-                        markerForm: { ...markerForm, type: type },
-                      })
-                    }
-                    className={`mx-2 w-12 h-12 rounded-full border border-gray-300 flex items-center justify-center ${
-                      markerForm.type === type
-                        ? "bg-gray-100 border-[#DDC97A]"
-                        : ""
-                    }`}
-                  >
+            isAuthenticated ? (
+              // Condition 2 : Ajout d'un marker
+              <View className="top-4">
+                <View className="flex flex-row items-center justify-between px-4">
+                  <TouchableOpacity className="flex items-center justify-center w-8 h-8 border border-[#cc514a] rounded-lg">
                     <FontAwesome6
-                      name={getIconByType(type)}
+                      name="trash"
                       size={17}
-                      color="#4A4A4A"
+                      color="#cc514a"
+                      onPress={() => {
+                        setAllValues({
+                          isAddingMarker: false,
+                          MarkerForm: {
+                            type: "",
+                            rating: 0,
+                          },
+                          tempMarker: null,
+                        });
+                        swipeUpRef.current?.openAtHalf(0);
+                      }}
                     />
                   </TouchableOpacity>
-                ))}
-              </ScrollView>
-              <View className="flex flex-row items-center justify-center mt-1">
-                <View className="relative w-16 flex items-center justify-center">
-                  <TouchableOpacity
-                    onPress={() => {
-                      setAllValues({
-                        markerForm: {
-                          ...markerForm,
-                          isPublic: !markerForm.isPublic,
-                        },
-                      });
-                      setVisibilityMessage(
-                        markerForm.isPublic ? "Privé" : "Public"
-                      );
-                      setTimeout(() => setVisibilityMessage(null), 2000);
-                    }}
-                  >
-                    <View className="h-8 flex items-center justify-center">
+
+                  <Text className="text-gray-700 font-semibold text-xl">
+                    Ajouter un lieu
+                  </Text>
+
+                  <TouchableOpacity className="flex items-center justify-center w-8 h-8 border border-[#4ACC4A] rounded-lg">
+                    <FontAwesome6
+                      name="check"
+                      size={17}
+                      color="#4ACC4A"
+                      onPress={() => {
+                        handleAddPlace();
+                      }}
+                    />
+                  </TouchableOpacity>
+                </View>
+                <TextInput
+                  className="border border-gray-300 rounded-lg text-lg p-2 mt-4 mx-10 text-center"
+                  placeholder="Nom de votre Adresse"
+                  value={markerForm.name}
+                  onChangeText={(text) =>
+                    setAllValues({
+                      markerForm: { ...markerForm, name: text },
+                    })
+                  }
+                />
+                <TextInput
+                  className="border border-gray-300 rounded-lg text-lg p-2 mt-4 mx-10 text-center"
+                  placeholder="Description de votre Adresse"
+                  multiline
+                  numberOfLines={3}
+                  value={markerForm.description}
+                  onChangeText={(text) =>
+                    setAllValues({
+                      markerForm: { ...markerForm, description: text },
+                    })
+                  }
+                />
+
+                <ScrollView
+                  horizontal
+                  className="flex flex-row mt-4 mb-2 h-16"
+                  showsHorizontalScrollIndicator
+                >
+                  {[
+                    "Tourism",
+                    "Museum",
+                    "Cinema",
+                    "Theater",
+                    "Park",
+                    "Education",
+                    "Jedi",
+                  ].map((type) => (
+                    <TouchableOpacity
+                      key={type}
+                      onPress={() =>
+                        setAllValues({
+                          markerForm: { ...markerForm, type: type },
+                        })
+                      }
+                      className={`mx-2 w-12 h-12 rounded-full border border-gray-300 flex items-center justify-center ${
+                        markerForm.type === type
+                          ? "bg-gray-100 border-[#DDC97A]"
+                          : ""
+                      }`}
+                    >
                       <FontAwesome6
-                        name={markerForm.isPublic ? "eye" : "eye-slash"}
+                        name={getIconByType(type)}
                         size={17}
                         color="#4A4A4A"
                       />
-                    </View>
-                  </TouchableOpacity>
-                  {visibilityMessage && (
-                    <Text className="absolute top-8 text-xs text-gray-600 w-full text-center">
-                      {visibilityMessage}
-                    </Text>
-                  )}
-                </View>
-
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <TouchableOpacity
-                    key={star}
-                    onPress={() =>
-                      setAllValues({
-                        markerForm: { ...markerForm, rating: star },
-                      })
-                    }
-                    className="mx-3"
-                  >
-                    <FontAwesome6
-                      name={star <= markerForm.rating ? "star" : "star"}
-                      size={24}
-                      color={star <= markerForm.rating ? "#DDC97A" : "#9CA3AF"}
-                    />
-                  </TouchableOpacity>
-                ))}
-              </View>
-              <TouchableOpacity
-                className="bg-[#DDC97A] p-3 rounded-lg flex-row items-center justify-center top-8 mx-10"
-                onPress={pickImages}
-              >
-                <FontAwesome6
-                  name="image"
-                  size={20}
-                  color="white"
-                  className="mr-2"
-                />
-                <Text className="text-white font-semibold">
-                  Sélectionner des photos
-                </Text>
-              </TouchableOpacity>
-              {markerForm.images && markerForm.images.length > 0 && (
-                <ScrollView
-                  horizontal
-                  className="top-10 px-10"
-                  showsHorizontalScrollIndicator={false}
-                >
-                  {markerForm.images.map((img, index) => (
-                    <View key={index} className="relative mr-3 shadow-sm mt-3">
-                      <Image
-                        source={{ uri: img.uri }}
-                        className="w-24 h-24 rounded-xl"
-                        resizeMode="cover"
-                      />
-                      <TouchableOpacity
-                        className="absolute -top-3 -right-3 bg-red-500 w-7 h-7 rounded-full items-center justify-center shadow-sm"
-                        onPress={() => {
-                          const newImages = [...markerForm.images];
-                          newImages.splice(index, 1);
-                          setAllValues({
-                            markerForm: { ...markerForm, images: newImages },
-                          });
-                        }}
-                      >
-                        <FontAwesome6 name="trash" size={12} color="white" />
-                      </TouchableOpacity>
-                    </View>
+                    </TouchableOpacity>
                   ))}
                 </ScrollView>
-              )}
-            </View>
+                <View className="flex flex-row items-center justify-center mt-1">
+                  <View className="relative w-16 flex items-center justify-center">
+                    <TouchableOpacity
+                      onPress={() => {
+                        setAllValues({
+                          markerForm: {
+                            ...markerForm,
+                            isPublic: !markerForm.isPublic,
+                          },
+                        });
+                        setVisibilityMessage(
+                          markerForm.isPublic ? "Privé" : "Public"
+                        );
+                        setTimeout(() => setVisibilityMessage(null), 2000);
+                      }}
+                    >
+                      <View className="h-8 flex items-center justify-center">
+                        <FontAwesome6
+                          name={markerForm.isPublic ? "eye" : "eye-slash"}
+                          size={17}
+                          color="#4A4A4A"
+                        />
+                      </View>
+                    </TouchableOpacity>
+                    {visibilityMessage && (
+                      <Text className="absolute top-8 text-xs text-gray-600 w-full text-center">
+                        {visibilityMessage}
+                      </Text>
+                    )}
+                  </View>
+
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <TouchableOpacity
+                      key={star}
+                      onPress={() =>
+                        setAllValues({
+                          markerForm: { ...markerForm, rating: star },
+                        })
+                      }
+                      className="mx-3"
+                    >
+                      <FontAwesome6
+                        name={star <= markerForm.rating ? "star" : "star"}
+                        size={24}
+                        color={
+                          star <= markerForm.rating ? "#DDC97A" : "#9CA3AF"
+                        }
+                      />
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <TouchableOpacity
+                  className="bg-[#DDC97A] p-3 rounded-lg flex-row items-center justify-center top-8 mx-10"
+                  onPress={pickImages}
+                >
+                  <FontAwesome6
+                    name="image"
+                    size={20}
+                    color="white"
+                    className="mr-2"
+                  />
+                  <Text className="text-white font-semibold">
+                    Sélectionner des photos
+                  </Text>
+                </TouchableOpacity>
+                {markerForm.images && markerForm.images.length > 0 && (
+                  <ScrollView
+                    horizontal
+                    className="top-10 px-10"
+                    showsHorizontalScrollIndicator={false}
+                  >
+                    {markerForm.images.map((img, index) => (
+                      <View
+                        key={index}
+                        className="relative mr-3 shadow-sm mt-3"
+                      >
+                        <Image
+                          source={{ uri: img.uri }}
+                          className="w-24 h-24 rounded-xl"
+                          resizeMode="cover"
+                        />
+                        <TouchableOpacity
+                          className="absolute -top-3 -right-3 bg-red-500 w-7 h-7 rounded-full items-center justify-center shadow-sm"
+                          onPress={() => {
+                            const newImages = [...markerForm.images];
+                            newImages.splice(index, 1);
+                            setAllValues({
+                              markerForm: { ...markerForm, images: newImages },
+                            });
+                          }}
+                        >
+                          <FontAwesome6 name="trash" size={12} color="white" />
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </ScrollView>
+                )}
+              </View>
+            ) : (
+              <View className="flex items-center justify-center p-6">
+                <Text className="text-gray-700 font-semibold text-xl text-center mb-4">
+                  Veuillez vous connecter pour ajouter une Adresse
+                </Text>
+                <TouchableOpacity
+                  className="bg-[#DDC97A] px-6 py-3 rounded-lg flex-row items-center"
+                  onPress={() => {
+                    setAllValues({
+                      isAddingMarker: false,
+                      tempMarker: null,
+                    });
+                    router.push("/auth");
+                  }}
+                >
+                  <FontAwesome6
+                    name="arrow-right-to-bracket"
+                    size={20}
+                    color="white"
+                    className="mr-2"
+                  />
+                  <Text className="text-white font-semibold text-lg">
+                    Se connecter
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )
           ) : (
-            // ) : (
-            //   <View className="flex items-center justify-center p-6">
-            //     <Text className="text-gray-700 font-semibold text-xl text-center mb-4">
-            //       Veuillez vous connecter pour ajouter une Adresse
-            //     </Text>
-            //     <TouchableOpacity
-            //       className="bg-[#DDC97A] px-6 py-3 rounded-lg flex-row items-center"
-            //       onPress={() => {
-            //         setAllValues({
-            //           isAddingMarker: false,
-            //           tempMarker: null,
-            //         });
-            //         router.push("/auth");
-            //       }}
-            //     >
-            //       <FontAwesome6
-            //         name="arrow-right-to-bracket"
-            //         size={20}
-            //         color="white"
-            //         className="mr-2"
-            //       />
-            //       <Text className="text-white font-semibold text-lg">
-            //         Se connecter
-            //       </Text>
-            //     </TouchableOpacity>
-            //   </View>
-            // )
             // État par défaut : Liste des nouveautés
             <>
               <Text className="text-gray-700 font-semibold top-3 text-xl">

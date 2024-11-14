@@ -11,7 +11,7 @@ export default function TabLayout() {
   const navigation = useNavigation();
   const state = useNavigationState((state) => state);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
- 
+
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
       "keyboardDidShow",
@@ -60,7 +60,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          href:  isAuthenticated ? "/profile" : null,
+          href: isAuthenticated ? "/profile" : null,
           headerShown: false,
           title: "Profile",
           tabBarIcon: ({ focused }) => (
@@ -81,19 +81,6 @@ export default function TabLayout() {
           tabBarIcon: ({ focused }) => (
             <Ionicons
               name="log-in"
-              size={24}
-              color={focused ? "#DDC97A" : "gray"}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="test"
-        options={{
-          headerShown: false,
-          tabBarIcon: ({ focused }) => (
-            <FontAwesome6
-              name="dev"
               size={24}
               color={focused ? "#DDC97A" : "gray"}
             />
