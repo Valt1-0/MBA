@@ -17,18 +17,22 @@ const CommentLocation = ({ id }) => {
 
   useEffect(() => {
     const fetchComments = async () => {
-      const commentsRef = query(
-        collection(db, "comments"),
-        where("locationId", "==", id),
-        orderBy("createdAt", "desc")
-      );
+      try {
+        const commentsRef = query(
+          collection(db, "comments"),
+          where("locationId", "==", id),
+          orderBy("createdAt", "desc")
+        );
 
-      const snapshot = await getDocs(commentsRef);
-      const commentsList = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setComments(commentsList);
+        const snapshot = await getDocs(commentsRef);
+        const commentsList = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setComments(commentsList);
+      } catch (error) {
+        console.error("Error fetching comments: ", error);
+      }
     };
 
     fetchComments();
@@ -37,22 +41,26 @@ const CommentLocation = ({ id }) => {
   const handleAddComment = async () => {
     if (newComment.trim() === "") return;
 
-    const commentRef = await addDoc(collection(db, "comments"), {
-      locationId: id,
-      text: newComment,
-      createdAt: serverTimestamp(),
-    });
+    try {
+      const commentRef = await addDoc(collection(db, "comments"), {
+        locationId: id,
+        text: newComment,
+        createdAt: serverTimestamp(),
+      });
 
-    // Ajouter le nouveau commentaire avec son ID
-    const newCommentWithId = {
-      id: commentRef.id,
-      locationId: id,
-      text: newComment,
-      createdAt: new Date(),
-    };
+      // Ajouter le nouveau commentaire avec son ID
+      const newCommentWithId = {
+        id: commentRef.id,
+        locationId: id,
+        text: newComment,
+        createdAt: new Date(),
+      };
 
-    setNewComment("");
-    setComments([newCommentWithId, ...comments]);
+      setNewComment("");
+      setComments([newCommentWithId, ...comments]);
+    } catch (error) {
+      console.error("Error adding comment: ", error);
+    }
   };
 
   return (
