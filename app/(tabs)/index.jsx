@@ -11,15 +11,14 @@ import {
   Dimensions,
   TextInput,
   Button,
-  ScrollView,
 } from "react-native";
 import MapView, {
   Marker,
   PROVIDER_GOOGLE,
   PROVIDER_DEFAULT,
 } from "react-native-maps";
+import { ScrollView } from "react-native-gesture-handler";
 import * as Location from "expo-location";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome, FontAwesome6 } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { getColorByType, getIconByType } from "../../utils/functions";
@@ -374,6 +373,7 @@ const HomeScreen = () => {
                 longitude: tempMarker.longitude,
               }}
               opacity={blinkAnim}
+              tracksViewChanges={false}
             >
               <FontAwesome6
                 name={getIconByType(markerForm.type)}
@@ -424,12 +424,12 @@ const HomeScreen = () => {
             </>
           ) : isAddingMarker ? (
             // Condition 2 : Ajout d'un marker
-            <View className="p-4">
+            <View className="">
               <Text className="text-gray-700 font-semibold text-xl text-center">
                 Ajouter un lieu
               </Text>
               <TextInput
-                className="border border-gray-300 p-1 top-2"
+                className="border border-gray-300 rounded-lg p-2 mt-4"
                 placeholder={markerForm.placeholder}
                 value={markerForm.name}
                 onChangeText={(text) =>
@@ -437,7 +437,8 @@ const HomeScreen = () => {
                 }
               />
 
-              <ScrollView horizontal className="flex flex-row top-2">
+              <ScrollView horizontal className="flex flex-row mt-4 mb-2 h-16"
+              showsHorizontalScrollIndicator>
                 {[
                   "Tourism",
                   "Museum",
@@ -445,13 +446,15 @@ const HomeScreen = () => {
                   "Theater",
                   "Park",
                   "Education",
+                  "Jedi",
                 ].map((type) => (
                   <TouchableOpacity
                     key={type}
                     onPress={() => setMarkerForm({ ...markerForm, type })}
                     className={`
-        m-2 p-3 rounded-full border border-gray-300
-        ${markerForm.type === type ? "bg-gray-100 border-gray-500" : ""}
+        mx-2 w-12 h-12 rounded-full border border-gray-300
+        flex items-center justify-center
+        ${markerForm.type === type ? "bg-gray-100 border-[#DDC97A]" : ""}
       `}
                   >
                     <FontAwesome6
@@ -462,6 +465,20 @@ const HomeScreen = () => {
                   </TouchableOpacity>
                 ))}
               </ScrollView>
+              <Button
+                title="Ajouter"
+                onPress={() => {
+                  setTempMarker(null);
+                  setIsAddingMarker(false);
+                  setMarkerForm({
+                    name: "",
+                    placeholder: "Nom de votre Adresse",
+                    type: "",
+                    rating: 0,
+                  });
+                  swipeUpRef.current?.openAtHalf(0);
+                }}
+              />
             </View>
           ) : (
             // État par défaut : Liste des nouveautés
