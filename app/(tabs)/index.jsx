@@ -50,7 +50,19 @@ const HomeScreen = () => {
     sliderValue: 1,
     userLocation: null,
     pourcentage: 0,
+    tempMarker:null,
+    isAddingMarker:false,
+    markerForm: {
+      name: "",
+      type: "",
+      rating: 0,
+    },
   });
+
+
+  const tempMarker = state.tempMarker;
+  const isAddingMarker = state.isAddingMarker;
+  const markerForm = state.markerForm;
 
   const mapRef = useRef(null);
   const swipeUpRef = useRef(null);
@@ -200,11 +212,13 @@ const HomeScreen = () => {
     const { latitude, longitude } = e.nativeEvent.coordinate;
     // Vérifier que les coordonnées sont valides
     if (typeof latitude === "number" && typeof longitude === "number") {
-      setTempMarker({
-        latitude: parseFloat(latitude),
-        longitude: parseFloat(longitude),
-      });
-      setIsAddingMarker(true);
+
+      setAllValues({ tempMarker: { latitude, longitude }, isAddingMarker: true });
+      // setTempMarker({
+      //   latitude: parseFloat(latitude),
+      //   longitude: parseFloat(longitude),
+      // });
+      // setIsAddingMarker(true);
     }
     swipeUpRef.current?.openAtHalf(1);
   };
@@ -401,6 +415,7 @@ const HomeScreen = () => {
           )}
           <RangeSlider
             ref={sliderRef}
+            style={{ width: "80%", alignSelf: "center" }}
             onSlidingComplete={(value) => setAllValues({ sliderValue: value })}
           />
         </Animated.View>
@@ -433,7 +448,8 @@ const HomeScreen = () => {
                 placeholder={markerForm.placeholder}
                 value={markerForm.name}
                 onChangeText={(text) =>
-                  setMarkerForm({ ...markerForm, name: text })
+                  setAllValues({ markerForm: { ...markerForm, name: text } })
+                  //setMarkerForm({ ...markerForm, name: text })
                 }
               />
 
@@ -448,7 +464,8 @@ const HomeScreen = () => {
                 ].map((type) => (
                   <TouchableOpacity
                     key={type}
-                    onPress={() => setMarkerForm({ ...markerForm, type })}
+                    onPress={() => setAllValues({ markerForm: { ...markerForm, type } })} 
+                    //setMarkerForm({ ...markerForm, type })}
                     className={`
         m-2 p-3 rounded-full border border-gray-300
         ${markerForm.type === type ? "bg-gray-100 border-gray-500" : ""}
