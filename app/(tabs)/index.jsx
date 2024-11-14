@@ -463,6 +463,11 @@ const HomeScreen = () => {
           },
           tempMarker: null,
         });
+
+        placeData.id = result.id;
+
+        setAllValues({ places: [...state.places, placeData] });
+
         swipeUpRef.current?.openAtHalf(0);
       }
     } catch (error) {
