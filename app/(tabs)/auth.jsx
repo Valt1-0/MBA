@@ -19,7 +19,7 @@ const AuthScreen = () => {
   const router = useRouter();
   const segments = useSegments();
 
-  useEffect(() => {
+  useEffect(() => { 
     if (userInfo) {
       router.replace("/profile");
     }
