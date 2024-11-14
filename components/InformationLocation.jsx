@@ -7,6 +7,7 @@ export default function ContactInfo({ selectedPlace }) {
   const [address, setAddress] = useState("");
 
   useEffect(() => {
+    console.log("selectedPlace", selectedPlace);
     if (selectedPlace) {
       const { longitude, latitude } = selectedPlace?.location;
       const apiKey = process.env.EXPO_PUBLIC_OPEN_ROUTE_SERVICE_API_KEY;
@@ -52,6 +53,11 @@ export default function ContactInfo({ selectedPlace }) {
         </View>
       )}
 
+      {/* Description */}
+      <View style={styles.row}>
+        <FontAwesome name="info" size={24} color="blue" />
+        <Text style={styles.text}>{selectedPlace.description}</Text>
+      </View>
       {/* Suggérer une modification */}
       <View style={styles.row}>
         <FontAwesome name="pencil" size={24} color="blue" />
@@ -61,14 +67,6 @@ export default function ContactInfo({ selectedPlace }) {
           <Text style={styles.text}>Suggérer une modif.</Text>
         </TouchableOpacity>
       </View>
-
-      {/* Voir plus */}
-      <TouchableOpacity
-        style={styles.seeMore}
-        onPress={() => console.log("Voir plus")}
-      >
-        <Text style={styles.seeMoreText}>Tout voir</Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -85,7 +83,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 16,
-    marginLeft: 8, 
+    marginLeft: 8,
   },
   openText: {
     color: "green",

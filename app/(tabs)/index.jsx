@@ -35,6 +35,8 @@ import { TabView, SceneMap, TabBar } from "react-native-tab-view";
 import ContactInfo from "../../components/InformationLocation";
 import { UserContext } from "../../context/UserContext";
 import { useRouter } from "expo-router";
+import { AnimatedMapView } from "react-native-maps/lib/MapView";
+import CommentLocation from "../../components/CommentLocation";
 
 const HomeScreen = () => {
   const [state, setState] = useState({
@@ -43,7 +45,7 @@ const HomeScreen = () => {
     city: null,
     followUser: true,
     parentHeight: 0,
-    sliderValue: 1,
+    sliderValue: 20,
     userLocation: null,
     pourcentage: 0,
     tempMarker: null,
@@ -76,7 +78,7 @@ const HomeScreen = () => {
       case "glimpse":
         return <ContactInfo selectedPlace={state.selectedPlace} />;
       case "opinion":
-        return <SecondRoute />;
+        return <CommentLocation id={state?.selectedPlace?.id} />;
       default:
         return null;
     }
@@ -224,7 +226,8 @@ const HomeScreen = () => {
 
   const handleMapPress = async (e) => {
     setAllValues({ selectedPlace: null, followUser: false });
-    if (!e.nativeEvent || !e.nativeEvent.coordinate) return;
+    console.log(e.nativeEvent);
+    if (!e.nativeEvent || !e.nativeEvent?.coordinate) return;
 
     const { latitude, longitude } = e.nativeEvent.coordinate;
     // Vérifier que les coordonnées sont valides
@@ -332,7 +335,8 @@ const HomeScreen = () => {
   };
 
   const handleUserLocationChange = async (event) => {
-    const { latitude, longitude } = event.nativeEvent.coordinate;
+    if (!event.nativeEvent?.coordinate) return;
+    const { latitude, longitude } = event.nativeEvent?.coordinate;
     setAllValues({ userLocation: { latitude, longitude } });
 
     if (state.followUser) {
@@ -391,13 +395,13 @@ const HomeScreen = () => {
           setAllValues({ parentHeight: height });
         }}
       >
-        <MapView
+        <AnimatedMapView
           ref={mapRef}
+          onLongPress={(e) => handleMapPress(e)}
           customMapStyle={customMapStyle}
-          style={{ width: "100%", height: "100%" }}
+          style={{ width: "100%", height: "100%", zIndex: -1 }}
           followsUserLocation={false}
           showsUserLocation={true}
-          onPress={handleMapPress}
           showsIndoors={false}
           showsTraffic={false}
           toolbarEnabled={false}
@@ -414,29 +418,32 @@ const HomeScreen = () => {
           onUserLocationChange={handleUserLocationChange}
           loadingEnabled={true}
         >
-          {state.places.map((place) => (
-            <Marker
-              key={place.id}
-              tracksViewChanges={false}
-              coordinate={{
-                latitude: place.latitude,
-                longitude: place.longitude,
-              }}
-              onPress={(e) => {
-                e.stopPropagation();
-                handleMarkerPress(place);
-              }}
-            >
-              <TouchableOpacity>
-                <FontAwesome6
-                  name={getIconByType(place.type)}
-                  size={20}
-                  color="#FF0000AA"
-                />
-              </TouchableOpacity>
-            </Marker>
-          ))}
-          {tempMarker && tempMarker.latitude && tempMarker.longitude && (
+          {state.places.map((place) => {
+
+            if(!place?.latitude || !place?.longitude) return null;
+            return (
+              <Marker
+                key={place.id}
+                tracksViewChanges={false}
+                coordinate={{
+                  latitude: place?.latitude,
+                  longitude: place?.longitude,
+                }}
+                onPress={(e) => {
+                  handleMarkerPress(place);
+                }}
+              >
+                <TouchableOpacity>
+                  <FontAwesome6
+                    name={getIconByType(place.type)}
+                    size={20}
+                    color="#FF0000AA"
+                  />
+                </TouchableOpacity>
+              </Marker>
+            );
+          })}
+          {tempMarker && tempMarker?.latitude && tempMarker?.longitude && (
             <Marker.Animated
               coordinate={{
                 latitude: tempMarker.latitude,
@@ -452,14 +459,16 @@ const HomeScreen = () => {
               />
             </Marker.Animated>
           )}
-        </MapView>
+        </AnimatedMapView>
         <Animated.View
           style={{ transform: [{ translateY: buttonAnim }], zIndex: 3 }}
         >
           {!state.followUser && (
             <TouchableOpacity
-              className="absolute bottom-10 left-5"
-              onPress={handleMyLocationPress}
+              className="absolute bottom-10 left-5 z-10"
+              onPress={(e) => {
+                handleMyLocationPress();
+              }}
             >
               <View
                 style={{ width: 64 }}
