@@ -43,7 +43,6 @@ import { AnimatedMapView } from "react-native-maps/lib/MapView";
 import CommentLocation from "../../components/CommentLocation";
 import { getDistance } from "geolib";
 
-
 const HomeScreen = () => {
   const [state, setState] = useState({
     places: [],
@@ -428,11 +427,12 @@ const HomeScreen = () => {
       const placeData = {
         name: markerForm.name,
         type: markerForm.type,
+        description: markerForm.description,
+        images: markerForm.images,
         rating: markerForm.rating,
         isPublic: markerForm.isPublic,
         latitude: tempMarker.latitude,
         longitude: tempMarker.longitude,
-        description: markerForm.description,
       };
 
       const result = await addPlace(placeData, userInfo);
@@ -452,6 +452,55 @@ const HomeScreen = () => {
       }
     } catch (error) {
       Alert.alert("Erreur", error.message);
+    }
+  };
+
+  // Fonction pour convertir en base64
+  const imageToBase64 = async (uri) => {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64data = reader.result.split(",")[1];
+        resolve(base64data);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  // Fonction pour pick les images
+  const pickImages = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        quality: 0.7,
+      });
+
+      if (!result.canceled) {
+        const processedImages = await Promise.all(
+          result.assets.map(async (asset) => {
+            const base64 = await imageToBase64(asset.uri);
+            return {
+              uri: asset.uri,
+              base64: base64,
+            };
+          })
+        );
+
+        setPhotos((prev) => [...prev, ...processedImages]);
+        setAllValues({
+          markerForm: {
+            ...markerForm,
+            images: [...(markerForm.images || []), ...processedImages],
+          },
+        });
+      }
+    } catch (error) {
+      console.error("Erreur sélection images:", error);
+      Alert.alert("Erreur", "Impossible de charger les images");
     }
   };
 
@@ -714,56 +763,19 @@ const HomeScreen = () => {
                 ))}
               </View>
               <TouchableOpacity
-                className="bg-blue-500 p-3 rounded-lg flex-row items-center justify-center"
-                onPress={async () => {
-                  const { status } =
-                    await Camera.requestCameraPermissionsAsync();
-                  if (status === "granted") {
-                    setShowCamera(true);
-                  }
-                }}
+                className="bg-blue-500 p-3 rounded-lg flex-row items-center justify-center mt-4 mx-10"
+                onPress={pickImages}
               >
                 <FontAwesome6
-                  name="camera"
+                  name="image"
                   size={20}
                   color="white"
                   className="mr-2"
                 />
                 <Text className="text-white font-semibold">
-                  Prendre une photo
+                  Sélectionner des photos
                 </Text>
               </TouchableOpacity>
-
-              {/* Affichage des photos */}
-              {photos.length > 0 && (
-                <ScrollView
-                  horizontal
-                  className="mt-4"
-                  showsHorizontalScrollIndicator={false}
-                >
-                  {photos.map((photo, index) => (
-                    <View key={index} className="relative mr-2">
-                      <Image
-                        source={{ uri: photo.uri }}
-                        className="w-24 h-24 rounded-lg"
-                      />
-                      <TouchableOpacity
-                        className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1"
-                        onPress={() => {
-                          const newPhotos = [...photos];
-                          newPhotos.splice(index, 1);
-                          setPhotos(newPhotos);
-                          setAllValues({
-                            markerForm: { ...markerForm, images: newPhotos },
-                          });
-                        }}
-                      >
-                        <FontAwesome6 name="times" size={12} color="white" />
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                </ScrollView>
-              )}
             </View>
           ) : (
             // ) : (
