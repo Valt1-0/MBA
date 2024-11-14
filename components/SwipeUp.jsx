@@ -209,7 +209,7 @@ const SwipeUp = forwardRef(
           onGestureEvent={onGestureEvent}
           onBegan={onGestureBegin}
           onEnded={onGestureEnd}
-          hitSlop={{ top: 20, bottom: 50, left: 50, right: 50 }} // Increase hit area
+          hitSlop={{ top: 20, bottom: 50, left: 50, right: 50 }}
         >
           <Animated.View
             style={[animatedStyle, { height: parentHeight }]}

@@ -77,7 +77,7 @@ const RangeSlider = forwardRef(({ onSlidingComplete }, ref) => {
           className="h-16 bg-white border border-slate-300 rounded-3xl items-center justify-center p-2"
         >
           {!isExpanded ? (
-            <FontAwesome6 name="ruler" size={28} color="#777777" />
+            <FontAwesome6 name="ruler" size={24} color="#777777" />
           ) : (
             <Animated.View
               style={{ opacity: opacityAnim }}
