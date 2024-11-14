@@ -1,15 +1,17 @@
-import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useContext, useEffect, useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-import { useEffect, useState } from "react";
+import { deletePlace } from "../utils/functions"; // Assurez-vous d'importer la fonction deletePlace
+import { UserContext } from "../context/UserContext";
 
 export default function ContactInfo({ selectedPlace }) {
   const [address, setAddress] = useState("");
+  const { userInfo } = useContext(UserContext);
 
   useEffect(() => {
     console.log("selectedPlace", selectedPlace);
     if (selectedPlace) {
-      const { longitude, latitude } = selectedPlace?.location;
+      const { longitude, latitude } = selectedPlace;
       const apiKey = process.env.EXPO_PUBLIC_OPEN_ROUTE_SERVICE_API_KEY;
       const url = `https://api.openrouteservice.org/geocode/reverse?api_key=${apiKey}&point.lon=${longitude}&point.lat=${latitude}`;
 
@@ -24,6 +26,23 @@ export default function ContactInfo({ selectedPlace }) {
         });
     }
   }, [selectedPlace]);
+
+  const handleDelete = async () => {
+    try {
+      const result = await deletePlace(selectedPlace.id);
+      if (result.success) {
+        Alert.alert("Succès", result.message);
+      } else {
+        Alert.alert("Erreur", result.error);
+      }
+    } catch (error) {
+      console.error("Error deleting place:", error);
+      Alert.alert(
+        "Erreur",
+        "Une erreur est survenue lors de la suppression du lieu."
+      );
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -58,6 +77,7 @@ export default function ContactInfo({ selectedPlace }) {
         <FontAwesome name="info" size={24} color="blue" />
         <Text style={styles.text}>{selectedPlace.description}</Text>
       </View>
+
       {/* Suggérer une modification */}
       <View style={styles.row}>
         <FontAwesome name="pencil" size={24} color="blue" />
@@ -67,6 +87,16 @@ export default function ContactInfo({ selectedPlace }) {
           <Text style={styles.text}>Suggérer une modif.</Text>
         </TouchableOpacity>
       </View>
+
+      {/* Bouton Supprimer */}
+      {userInfo?.uid === selectedPlace?.createdBy?.uid && (
+        <View style={styles.row}>
+          <FontAwesome name="trash" size={24} color="red" />
+          <TouchableOpacity onPress={handleDelete}>
+            <Text style={[styles.text, { color: "red" }]}>Supprimer</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }

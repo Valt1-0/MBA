@@ -9,6 +9,7 @@ import {
   addDoc,
   deleteDoc,
   doc,
+  GeoPoint
 } from "firebase/firestore";
 import {
   geohashQueryBounds,
@@ -92,7 +93,7 @@ async function queryNearbyPlaces(center, radiusInM) {
 async function addPlace(place, userInfo) {
   try {
     console.log("place : " + JSON.stringify(place.type));
-    
+
     // Validation des données requises
     if (!place.name || !place.type || !place.latitude || !place.longitude) {
       throw new Error("Informations manquantes");
@@ -121,10 +122,9 @@ async function addPlace(place, userInfo) {
         uid: userInfo.uid,
         displayName: userInfo.displayName || "Anonyme",
       },
-      location: {
-        latitude: place.latitude,
-        longitude: place.longitude,
-      },
+      location: new GeoPoint(place.latitude, place.longitude),
+      latitude: place.latitude,
+      longitude: place.longitude,
       geohash,
     };
 
@@ -145,10 +145,21 @@ async function addPlace(place, userInfo) {
   }
 }
 
-/* Fonction pour supprimer un lieu */
 async function deletePlace(placeId) {
-  // Supprimer le lieu de la collection "places"
-  await deleteDoc(doc(db, "places", placeId));
+  try {
+    // Supprimer le lieu de la collection "places"
+    await deleteDoc(doc(db, "places", placeId));
+    return {
+      success: true,
+      message: "Lieu supprimé avec succès",
+    };
+  } catch (error) {
+    console.error("Erreur lors de la suppression du lieu:", error);
+    return {
+      success: false,
+      error: error.message || "Erreur lors de la suppression du lieu",
+    };
+  }
 }
 
 export {

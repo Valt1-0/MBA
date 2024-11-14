@@ -297,8 +297,8 @@ const HomeScreen = () => {
     setAllValues({ selectedPlace: place, followUser: false });
 
     const userCoords = {
-      latitude: place.latitude,
-      longitude: place.longitude,
+      latitude: place?.latitude,
+      longitude: place?.longitude,
     };
 
     await swipeUpRef?.current?.openAtHalf(2);
