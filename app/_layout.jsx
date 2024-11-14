@@ -7,8 +7,8 @@ export default function RootLayout() {
   return (
     <UserProvider>
       <View style={{ flex: 1 }}>
-        <Stack initialRouteName="index">
-          {/* <Stack.Screen name="index" options={{ headerShown: false }} /> SplashScreen */} 
+        <Stack  >
+          {/* <Stack.Screen name="index" options={{ headerShown: false }} /> SplashScreen */}
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         </Stack>
       </View>

@@ -63,7 +63,7 @@ const HomeScreen = () => {
     index: 0,
   });
   const layout = useWindowDimensions();
-
+  const index = state.index;
   const SecondRoute = () => (
     <View>
       <Text> test</Text>
@@ -474,7 +474,7 @@ const HomeScreen = () => {
             onSlidingComplete={(value) => setAllValues({ sliderValue: value })}
           />
         </Animated.View>
-        
+
         <SwipeUp
           ref={swipeUpRef}
           parentHeight={state.parentHeight}
@@ -488,7 +488,7 @@ const HomeScreen = () => {
               <TabView
                 navigationState={{ index, routes }}
                 renderScene={renderScene}
-                onIndexChange={() => setAllValues({ index: index })}
+                onIndexChange={(index) => setAllValues({ index: index })}
                 initialLayout={{ width: layout.width }}
                 renderTabBar={renderTabBar}
               />

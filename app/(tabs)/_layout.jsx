@@ -4,7 +4,7 @@ import "../../global.css";
 import { UserContext } from "../../context/UserContext";
 import { useContext, useEffect, useState } from "react";
 import { useNavigationState } from "@react-navigation/native";
-import { Keyboard } from "react-native";
+import { Keyboard, Platform } from "react-native";
 
 export default function TabLayout() {
   const { userInfo } = useContext(UserContext);
@@ -12,26 +12,26 @@ export default function TabLayout() {
   const state = useNavigationState((state) => state);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
 
-    useEffect(() => {
-      const keyboardDidShowListener = Keyboard.addListener(
-        "keyboardDidShow",
-        () => {
-          setKeyboardVisible(true);
-        }
-      );
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      () => {
+        if (Platform.OS === "android") setKeyboardVisible(true);
+      }
+    );
 
-      const keyboardDidHideListener = Keyboard.addListener(
-        "keyboardDidHide",
-        () => {
-          setKeyboardVisible(false);
-        }
-      );
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        setKeyboardVisible(false);
+      }
+    );
 
-      return () => {
-        keyboardDidShowListener.remove();
-        keyboardDidHideListener.remove();
-      };
-    }, []);
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   return (
     <Tabs
@@ -39,7 +39,6 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: "#DDC97A",
         tabBarInactiveTintColor: "gray",
-        
       }}
     >
       <Tabs.Screen
@@ -55,9 +54,8 @@ export default function TabLayout() {
               color={focused ? "#DDC97A" : "gray"}
             />
           ),
-          tabBarStyle : {display: isKeyboardVisible ? "none" : "flex"}
+          tabBarStyle: { display: isKeyboardVisible ? "none" : "flex" },
         }}
-        
       />
       <Tabs.Screen
         name="profile"

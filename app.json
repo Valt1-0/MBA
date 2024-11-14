@@ -1,5 +1,6 @@
 {
   "expo": {
+    "sdkVersion": "52.0.0",
     "name": "MBA",
     "slug": "MBA",
     "version": "1.0.0",
@@ -44,6 +45,6 @@
     },
     "androidNavigationBar": {
       "backgroundColor": "#DDC97A"
-    },
+    }
   }
 }
