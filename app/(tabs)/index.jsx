@@ -59,11 +59,6 @@ const HomeScreen = () => {
     },
   });
 
-
-  const tempMarker = state.tempMarker;
-  const isAddingMarker = state.isAddingMarker;
-  const markerForm = state.markerForm;
-
   const mapRef = useRef(null);
   const swipeUpRef = useRef(null);
   const sliderRef = useRef(null);
