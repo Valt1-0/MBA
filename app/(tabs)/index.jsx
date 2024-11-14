@@ -60,9 +60,9 @@ const HomeScreen = () => {
       type: "",
       rating: 0,
     },
+    index: 0,
   });
   const layout = useWindowDimensions();
-  const [index, setIndex] = React.useState(0);
 
   const SecondRoute = () => (
     <View>
@@ -195,7 +195,7 @@ const HomeScreen = () => {
   }, [state.pourcentage]);
 
   useEffect(() => {
-    if (!state.userLocation || !state.followUser) return;
+    if (!state.userLocation) return;
     const center = [state.userLocation.latitude, state.userLocation.longitude];
     const radiusInM = state.sliderValue * 100;
 
@@ -404,7 +404,10 @@ const HomeScreen = () => {
           showsTraffic={false}
           toolbarEnabled={false}
           moveOnMarkerPress={false}
-          onTouchStart={() => setAllValues({ followUser: false })}
+          onTouchStart={() => {
+            sliderRef.current?.close();
+            setAllValues({ followUser: false });
+          }}
           showsMyLocationButton={false}
           showsPointsOfInterest={false}
           provider={
@@ -486,7 +489,7 @@ const HomeScreen = () => {
               <TabView
                 navigationState={{ index, routes }}
                 renderScene={renderScene}
-                onIndexChange={setIndex}
+                onIndexChange={() => setAllValues({ index: index })}
                 initialLayout={{ width: layout.width }}
                 renderTabBar={renderTabBar}
               />
