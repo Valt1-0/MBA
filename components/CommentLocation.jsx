@@ -1,5 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TextInput, Button, ScrollView } from "react-native";
+import React, { useState, useEffect, useContext } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 import { db } from "../utils/firebase";
 import {
   collection,
@@ -10,10 +17,14 @@ import {
   addDoc,
   serverTimestamp,
 } from "firebase/firestore";
+import { UserContext } from "../context/UserContext";
+import { useRouter } from "expo-router";
 
 const CommentLocation = ({ id }) => {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState("");
+  const { userInfo, isAuthenticated } = useContext(UserContext);
+  const router = useRouter();
 
   useEffect(() => {
     const fetchComments = async () => {
@@ -46,6 +57,7 @@ const CommentLocation = ({ id }) => {
         locationId: id,
         text: newComment,
         createdAt: serverTimestamp(),
+        createdBy: userInfo?.uid,
       });
 
       // Ajouter le nouveau commentaire avec son ID
@@ -54,6 +66,7 @@ const CommentLocation = ({ id }) => {
         locationId: id,
         text: newComment,
         createdAt: new Date(),
+        createdBy: userInfo?.uid,
       };
 
       setNewComment("");
@@ -67,20 +80,39 @@ const CommentLocation = ({ id }) => {
     <View style={{ padding: 20 }}>
       <View style={{ marginVertical: 20 }}>
         <Text style={{ fontSize: 18 }}>Ajouter un commentaire</Text>
-        <TextInput
-          value={newComment}
-          onChangeText={setNewComment}
-          placeholder="Votre commentaire"
-          style={{
-            height: 100,
-            borderColor: "gray",
-            borderWidth: 1,
-            marginVertical: 10,
-            padding: 10,
-          }}
-          multiline
-        />
-        <Button title="Ajouter" onPress={handleAddComment} />
+        {isAuthenticated ? (
+          <>
+            <TextInput
+              value={newComment}
+              onChangeText={setNewComment}
+              placeholder="Votre commentaire"
+              style={{
+                height: 100,
+                borderColor: "gray",
+                borderWidth: 1,
+                marginVertical: 10,
+                padding: 10,
+              }}
+              multiline
+            />
+            <Button title="Ajouter" onPress={handleAddComment} />
+          </>
+        ) : (
+          <TouchableOpacity
+            style={{
+              backgroundColor: "#DDC97A",
+              padding: 10,
+              borderRadius: 5,
+              alignItems: "center",
+              marginTop: 10,
+            }}
+            onPress={() => router.push("/auth")}
+          >
+            <Text style={{ color: "white", fontWeight: "bold" }}>
+              Se Connecter
+            </Text>
+          </TouchableOpacity>
+        )}
       </View>
       <ScrollView>
         <Text style={{ fontSize: 18 }}>Commentaires</Text>

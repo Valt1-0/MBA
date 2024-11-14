@@ -6,6 +6,7 @@ import {
   StyleSheet,
   TextInput,
   Button,
+  Image,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Entypo } from "@expo/vector-icons"; // Importer les icônes
@@ -13,9 +14,12 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { UserContext } from "../../context/UserContext";
 import { useFocusEffect, useRouter } from "expo-router";
 import { getAuth, updateProfile, signOut } from "firebase/auth";
+import * as ImagePicker from "expo-image-picker";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export default function Profile() {
   const [activeButton, setActiveButton] = useState(null);
+  const [avatar, setAvatar] = useState(null);
 
   const { userInfo, setUser } = useContext(UserContext);
   const [displayName, setDisplayName] = useState(userInfo?.displayName || "");
@@ -23,6 +27,7 @@ export default function Profile() {
   const [password, setPassword] = useState("");
   const auth = getAuth();
   const router = useRouter();
+  const storage = getStorage();
 
   useEffect(() => {
     if (!userInfo?.isAuthenticated) {
@@ -36,6 +41,7 @@ export default function Profile() {
     // Update the user context
     updateProfile(auth.currentUser, {
       displayName: displayName,
+      photoURL: avatar,
     })
       .then(() => {
         // Profile updated!
@@ -45,7 +51,7 @@ export default function Profile() {
         // An error occurred
         console.error("Error updating profile:", error);
       });
-    setUser({ ...userInfo, displayName, email });
+    setUser({ ...userInfo, displayName, email, photoURL: avatar });
   };
 
   const handleSignOut = () => {
@@ -53,15 +59,6 @@ export default function Profile() {
       .then(() => {
         // Sign-out successful.
         setUser(null);
-
-        // navigation.dispatch(
-        //   CommonActions.reset({
-        //     index: 0,
-        //     routes: [{ name: "Auth" }],
-        //   })
-        // );
-
-        //navigation.navigate("Profile");
       })
       .catch((error) => {
         // An error happened.
@@ -69,10 +66,55 @@ export default function Profile() {
       });
   };
 
+  const pickImage = async () => {
+    // Demander la permission d'accès à la galerie
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      alert(
+        "Désolé, nous avons besoin de la permission d'accès à la galerie pour cela !"
+      );
+      return;
+    }
+
+    // Ouvrir la galerie pour sélectionner une image
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: [ImagePicker.MediaType.Images],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      const source = { uri: result.assets[0].uri };
+      setAvatar(source.uri);
+      uploadImage(source.uri);
+    }
+  };
+
+  const uploadImage = async (uri) => {
+    const response = await fetch(uri);
+    const blob = await response.blob();
+    const storageRef = ref(storage, `avatars/${auth.currentUser.uid}`);
+    await uploadBytes(storageRef, blob);
+    const downloadURL = await getDownloadURL(storageRef);
+    setAvatar(downloadURL);
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Profile</Text>
       <View style={styles.form}>
+        <TouchableOpacity onPress={pickImage}>
+          <Image
+            source={
+              avatar
+                ? { uri: avatar }
+                : require("../../assets/avatar-placeholder.png")
+            }
+            style={styles.avatar}
+          />
+          <Text style={styles.changeAvatarText}>Changer d'avatar</Text>
+        </TouchableOpacity>
         <View style={styles.formGroup}>
           <Text style={styles.label}>Display Name:</Text>
           <TextInput
@@ -134,5 +176,17 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     paddingHorizontal: 8,
     borderRadius: 4,
+  },
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    alignSelf: "center",
+    marginBottom: 20,
+  },
+  changeAvatarText: {
+    textAlign: "center",
+    color: "#007BFF",
+    marginBottom: 20,
   },
 });

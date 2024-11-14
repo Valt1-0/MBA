@@ -7,11 +7,11 @@ import { useNavigationState } from "@react-navigation/native";
 import { Keyboard, Platform } from "react-native";
 
 export default function TabLayout() {
-  const { userInfo } = useContext(UserContext);
+  const { userInfo, isAuthenticated } = useContext(UserContext);
   const navigation = useNavigation();
   const state = useNavigationState((state) => state);
   const [isKeyboardVisible, setKeyboardVisible] = useState(false);
-
+ 
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
       "keyboardDidShow",
@@ -60,7 +60,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          href: userInfo?.isAuthenticated ? "/profile" : null,
+          href:  isAuthenticated ? "/profile" : null,
           headerShown: false,
           title: "Profile",
           tabBarIcon: ({ focused }) => (
@@ -75,7 +75,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="auth"
         options={{
-          href: !userInfo?.isAuthenticated ? "/auth" : null,
+          href: !isAuthenticated ? "/auth" : null,
           headerShown: false,
           title: "Auth",
           tabBarIcon: ({ focused }) => (
