@@ -16,6 +16,12 @@
           "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
         }
       ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "L'application souhaite accéder à votre caméra."
+        }
+      ],
       ["expo-router"]
     ],
     "experiments": {
