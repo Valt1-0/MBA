@@ -160,6 +160,7 @@ const SwipeUp = forwardRef(
     };
 
     const onGestureBegin = () => {
+      console.log("onGestureBegin");  
       // Record gesture start position
       startY.value = translateY.value;
     };
@@ -204,7 +205,7 @@ const SwipeUp = forwardRef(
     };
 
     return (
-      <View style={{ flex: 1, height: "100%",zIndex:120 }}>
+      <View style={{ flex: 1, height: "100%"  }}>
         <PanGestureHandler
           onGestureEvent={onGestureEvent}
           onBegan={onGestureBegin}

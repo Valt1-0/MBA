@@ -461,11 +461,11 @@ const HomeScreen = () => {
           setAllValues({ parentHeight: height });
         }}
       >
-        <AnimatedMapView
+        <MapView
           ref={mapRef}
           onLongPress={(e) => handleMapPress(e)}
           customMapStyle={customMapStyle}
-          style={{ width: "100%", height: "100%", zIndex: -1 }}
+          style={{ width: "100%", height: "100%"  }}
           followsUserLocation={false}
           showsUserLocation={true}
           showsIndoors={false}
@@ -524,7 +524,7 @@ const HomeScreen = () => {
               />
             </Marker.Animated>
           )}
-        </AnimatedMapView>
+        </MapView>
         <Animated.View style={{ transform: [{ translateY: buttonAnim }] }}>
           {!state.followUser && (
             <TouchableOpacity
