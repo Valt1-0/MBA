@@ -9,6 +9,7 @@ import {
   addDoc,
   deleteDoc,
   doc,
+  GeoPoint
 } from "firebase/firestore";
 import {
   geohashQueryBounds,
@@ -117,10 +118,9 @@ async function addPlace(place, userInfo) {
         uid: userInfo.uid,
         displayName: userInfo.displayName || "Anonyme",
       },
-      location: {
-        latitude: place.latitude,
-        longitude: place.longitude,
-      },
+      location: new GeoPoint(place.latitude, place.longitude),
+      latitude: place.latitude,
+      longitude: place.longitude,
       geohash,
     };
 
@@ -140,33 +140,17 @@ async function addPlace(place, userInfo) {
   }
 }
 
-async function deletePlace(placeId, userInfo) {
+async function deletePlace(placeId) {
   try {
-    // Récupérer le document
-    const placeRef = doc(db, "places", placeId);
-    const placeDoc = await getDoc(placeRef);
-
-    if (!placeDoc.exists()) {
-      throw new Error("Ce lieu n'existe pas");
-    }
-
-    const placeData = placeDoc.data();
-
-    // Vérifier si l'utilisateur est le propriétaire
-    if (placeData.createdBy.uid !== userInfo.uid) {
-      throw new Alert("Vous n'êtes pas autorisé à supprimer ce lieu");
-    }
-
-    // Si tout est OK, supprimer le document
-    await deleteDoc(placeRef);
-
+    // Supprimer le lieu de la collection "places"
+    await deleteDoc(doc(db, "places", placeId));
     return {
       success: true,
       message: "Lieu supprimé avec succès",
     };
   } catch (error) {
-    console.error("Erreur suppression:", error);
-    throw {
+    console.error("Erreur lors de la suppression du lieu:", error);
+    return {
       success: false,
       error: error.message || "Erreur lors de la suppression du lieu",
     };

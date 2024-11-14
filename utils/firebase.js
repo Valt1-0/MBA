@@ -7,6 +7,7 @@ import {
   getReactNativePersistence,
 } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
+import { getStorage } from "firebase/storage";
 
 // Optionally import the services that you want to use
 // import {...} from "firebase/database";
@@ -35,7 +36,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = initializeAuth(app, { persistence });
 const db = getFirestore(app);
+const storage = getStorage(app);
 // For more information on how to access Firebase in your project,
 // see the Firebase documentation: https://firebase.google.com/docs/web/setup#access-firebase
 
-export { auth, db };
+export { auth, db, storage };
