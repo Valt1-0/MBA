@@ -11,7 +11,6 @@ import {
   Dimensions,
   TextInput,
   Button,
-  ScrollView,
   useWindowDimensions,
 } from "react-native";
 import MapView, {
@@ -64,17 +63,11 @@ const HomeScreen = () => {
   const layout = useWindowDimensions();
   const [index, setIndex] = React.useState(0);
 
-
-
-
-
   const SecondRoute = () => (
     <View>
       <Text> test</Text>
     </View>
   );
-
-
 
   const routes = [
     { key: "glimpse", title: "Aperçu" },
@@ -496,8 +489,11 @@ const HomeScreen = () => {
                 }
               />
 
-              <ScrollView horizontal className="flex flex-row mt-4 mb-2 h-16"
-              showsHorizontalScrollIndicator>
+              <ScrollView
+                horizontal
+                className="flex flex-row mt-4 mb-2 h-16"
+                showsHorizontalScrollIndicator
+              >
                 {[
                   "Tourism",
                   "Museum",
@@ -530,13 +526,15 @@ const HomeScreen = () => {
               <Button
                 title="Ajouter"
                 onPress={() => {
-                  setTempMarker(null);
-                  setIsAddingMarker(false);
-                  setMarkerForm({
-                    name: "",
-                    placeholder: "Nom de votre Adresse",
-                    type: "",
-                    rating: 0,
+                  setAllValues({
+                    isAddingMarker: false,
+                    MarkerForm: {
+                      name: "",
+                      placeholder: "Nom de votre Adresse",
+                      type: "",
+                      rating: 0,
+                    },
+                    tempMarker: null,
                   });
                   swipeUpRef.current?.openAtHalf(0);
                 }}
