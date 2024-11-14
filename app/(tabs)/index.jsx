@@ -47,8 +47,7 @@ const HomeScreen = () => {
     city: null,
     followUser: true,
     parentHeight: 0,
-    sliderValue: 1,
-    location: null,
+    sliderValue: 1, 
     userLocation: null,
     pourcentage: 0,
   });
@@ -132,8 +131,8 @@ const HomeScreen = () => {
   }, []);
 
   useEffect(() => {
-    if (!state.location) return;
-    const center = [state.location.latitude, state.location.longitude];
+    if (!state.userLocation || !state.followUser) return;
+    const center = [state.userLocation.latitude, state.userLocation.longitude];
     const radiusInM = state.sliderValue * 100;
 
     queryNearbyPlaces(center, radiusInM).then((docs) => {
@@ -143,7 +142,7 @@ const HomeScreen = () => {
       }));
       setAllValues({ places: placesData });
     });
-  }, [state.location, state.sliderValue]);
+  }, [state.userLocation, state.sliderValue]);
 
   useEffect(() => {
     (async () => {
@@ -165,7 +164,7 @@ const HomeScreen = () => {
         longitude: userLocation.coords.longitude,
       };
 
-      setAllValues({ location: userCoords });
+      setAllValues({ userLocation: userCoords });
 
       if (mapRef.current) {
         setAllValues({ followUser: false });
@@ -193,14 +192,11 @@ const HomeScreen = () => {
     await updateCamera(userCoords, state.pourcentage);
   };
 
-  const handleMapPress = (e) => {
-    sliderRef?.current?.close();
-    setAllValues({ followUser: false }); // Désactivez le suivi de l'utilisateur lors de l'interaction avec la carte
-
+  const handleMapPress = async (e) => {
+    setAllValues({ selectedPlace: null, followUser: false });
     if (!e.nativeEvent || !e.nativeEvent.coordinate) return;
 
-    const { latitude, longitude } = e.nativeEvent.coordinate;
-
+    const { latitude, longitude } = e.nativeEvent.coordinate; 
     // Vérifier que les coordonnées sont valides
     if (typeof latitude === "number" && typeof longitude === "number") {
       setTempMarker({
@@ -210,7 +206,6 @@ const HomeScreen = () => {
       setIsAddingMarker(true);
     }
   };
-
   const handleSwipePositionChange = async (
     newPosition,
     final = false,
@@ -318,9 +313,6 @@ const HomeScreen = () => {
     }
   };
 
-
-
-  
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar hidden={true} />
@@ -337,12 +329,12 @@ const HomeScreen = () => {
           style={{ width: "100%", height: "100%" }}
           followsUserLocation={false}
           showsUserLocation={true}
-          onPress={() => setAllValues({ selectedPlace: null })}
+          onPress={handleMapPress}
           showsIndoors={false}
           showsTraffic={false}
           toolbarEnabled={false}
           moveOnMarkerPress={false}
-          onTouchStart={handleMapPress}
+          onTouchStart={() => setAllValues({ followUser: false })}
           showsMyLocationButton={false}
           showsPointsOfInterest={false}
           provider={
