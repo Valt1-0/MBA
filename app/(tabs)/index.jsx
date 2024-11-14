@@ -12,6 +12,7 @@ import {
   TextInput,
   Button,
   ScrollView,
+  useWindowDimensions,
 } from "react-native";
 import MapView, {
   Marker,
@@ -39,6 +40,8 @@ import * as NavigationBar from "expo-navigation-bar";
 import { geohashQueryBounds, distanceBetween } from "geofire-common";
 import { useSegments, usePathname } from "expo-router";
 import RangeSlider from "../../components/Slider";
+import { TabView, SceneMap, TabBar } from "react-native-tab-view";
+import ContactInfo from "../../components/InformationLocation";
 
 const HomeScreen = () => {
   const [state, setState] = useState({
@@ -50,15 +53,53 @@ const HomeScreen = () => {
     sliderValue: 1,
     userLocation: null,
     pourcentage: 0,
-    tempMarker:null,
-    isAddingMarker:false,
+    tempMarker: null,
+    isAddingMarker: false,
     markerForm: {
       name: "",
       type: "",
       rating: 0,
     },
   });
+  const layout = useWindowDimensions();
+  const [index, setIndex] = React.useState(0);
 
+
+
+
+
+  const SecondRoute = () => (
+    <View>
+      <Text> test</Text>
+    </View>
+  );
+
+
+
+  const routes = [
+    { key: "glimpse", title: "Aperçu" },
+    { key: "opinion", title: "Avis" },
+  ];
+  const renderScene = ({ route }) => {
+    switch (route.key) {
+      case "glimpse":
+        return <ContactInfo selectedPlace={state.selectedPlace} />;
+      case "opinion":
+        return <SecondRoute />;
+      default:
+        return null;
+    }
+  };
+
+  const renderTabBar = (props) => (
+    <TabBar
+      {...props}
+      indicatorStyle={{ backgroundColor: "blue" }}
+      style={{ backgroundColor: "white" }}
+      inactiveColor="black"
+      activeColor="blue"
+    />
+  );
 
   const tempMarker = state.tempMarker;
   const isAddingMarker = state.isAddingMarker;
@@ -70,7 +111,7 @@ const HomeScreen = () => {
   const buttonAnim = useRef(new Animated.Value(0)).current;
   const segments = useSegments();
   const pathName = usePathname();
- 
+
   const blinkAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
@@ -204,15 +245,16 @@ const HomeScreen = () => {
     const { latitude, longitude } = e.nativeEvent.coordinate;
     // Vérifier que les coordonnées sont valides
     if (typeof latitude === "number" && typeof longitude === "number") {
-
-      setAllValues({ tempMarker: { latitude, longitude }, isAddingMarker: true });
+      setAllValues({
+        tempMarker: { latitude, longitude },
+        isAddingMarker: true,
+      });
       // setTempMarker({
       //   latitude: parseFloat(latitude),
       //   longitude: parseFloat(longitude),
       // });
       // setIsAddingMarker(true);
     }
-
   };
   const handleSwipePositionChange = async (
     newPosition,
@@ -416,6 +458,13 @@ const HomeScreen = () => {
           {state.selectedPlace ? (
             // Condition 1 : Place sélectionnée
             <>
+              <TabView
+                navigationState={{ index, routes }}
+                renderScene={renderScene}
+                onIndexChange={setIndex}
+                initialLayout={{ width: layout.width }}
+                renderTabBar={renderTabBar}
+              />
               <Text className="text-gray-700 font-semibold top-3 text-xl">
                 {state.selectedPlace.name}
               </Text>
@@ -429,8 +478,9 @@ const HomeScreen = () => {
               <TextInput
                 placeholder="Nom du lieu"
                 value={markerForm.name}
-                onChangeText={(text) =>
-                  setAllValues({ markerForm: { ...markerForm, name: text } })
+                onChangeText={
+                  (text) =>
+                    setAllValues({ markerForm: { ...markerForm, name: text } })
                   //setMarkerForm({ ...markerForm, name: text })
                 }
               />
@@ -439,7 +489,9 @@ const HomeScreen = () => {
                 {["person-walking", "food", "park", "museum"].map((type) => (
                   <TouchableOpacity
                     key={type}
-                    onPress={() => setAllValues({ markerForm: { ...markerForm, type } })} 
+                    onPress={() =>
+                      setAllValues({ markerForm: { ...markerForm, type } })
+                    }
                     //setMarkerForm({ ...markerForm, type })}
                     className={`
         mx-2 p-3 rounded-full border border-gray-300
