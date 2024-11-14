@@ -47,7 +47,7 @@ const HomeScreen = () => {
     city: null,
     followUser: true,
     parentHeight: 0,
-    sliderValue: 1, 
+    sliderValue: 1,
     userLocation: null,
     pourcentage: 0,
   });
@@ -196,7 +196,7 @@ const HomeScreen = () => {
     setAllValues({ selectedPlace: null, followUser: false });
     if (!e.nativeEvent || !e.nativeEvent.coordinate) return;
 
-    const { latitude, longitude } = e.nativeEvent.coordinate; 
+    const { latitude, longitude } = e.nativeEvent.coordinate;
     // Vérifier que les coordonnées sont valides
     if (typeof latitude === "number" && typeof longitude === "number") {
       setTempMarker({
@@ -375,7 +375,9 @@ const HomeScreen = () => {
             />
           )}
         </MapView>
-        <Animated.View style={{ transform: [{ translateY: buttonAnim }] }}>
+        <Animated.View
+          style={{ transform: [{ translateY: buttonAnim }], zIndex: 3 }}
+        >
           {!state.followUser && (
             <TouchableOpacity
               className="absolute bottom-10 left-5"
