@@ -3,8 +3,15 @@ import React, {
   useState,
   forwardRef,
   useImperativeHandle,
+  useRef,
 } from "react";
-import { View, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+  Dimensions,
+} from "react-native";
 import { PanGestureHandler } from "react-native-gesture-handler";
 import Animated, {
   useAnimatedStyle,
@@ -16,12 +23,30 @@ import { FontAwesome } from "@expo/vector-icons";
 
 const SwipeUp = forwardRef(
   ({ children, parentHeight, positions, onPositionChange }, ref) => {
+    const [currentHeight, setCurrentHeight] = useState(
+      Dimensions.get("window").height
+    );
     const translateY = useSharedValue(parentHeight); // Le panneau commence en bas de l'écran
     const startY = useSharedValue(0); // Position de départ du geste
     const [isFullyOpen, setIsFullyOpen] = useState(false);
     const [lastPosition, setLastPosition] = useState(parentHeight); // Dernière position du swipe
-
+    const [lastIndexPosition, setLastIndexPosition] = useState(0); // Dernière position du swipe
     // Define the positions for min and max open
+
+    useEffect(() => {
+      setCurrentHeight(parentHeight);
+
+      // Recalculer la position actuelle avec la nouvelle hauteur
+      if (lastIndexPosition !== null) {
+        const newPositions = positions.map(
+          (pos) => parentHeight - (pos / 100) * parentHeight
+        );
+        const newPosition = newPositions[lastIndexPosition];
+
+        // Animer vers la nouvelle position
+        handlePostionChange(newPosition, 300, true);
+      }
+    }, [parentHeight]);
 
     const positionValues = positions.map(
       (pos) => parentHeight - (pos / 100) * parentHeight
@@ -29,34 +54,51 @@ const SwipeUp = forwardRef(
 
     const minClosedPosition = positionValues[0]; // Position just above the tab bar
     const maxOpenPosition = positionValues[positions.length - 1]; // Maximum open position (80% screen height)
+    const getPositionIndex = (position) => {
+      let closestIndex = 0;
+      let minDistance = Math.abs(position - positionValues[0]);
 
-    const handlePostionChange = (position, duration, end = false) => {
-
-        if (end) {
-          console.log("end", translateY.value);
-          setLastPosition(translateY.value);
+      for (let i = 1; i < positionValues.length; i++) {
+        const distance = Math.abs(position - positionValues[i]);
+        if (distance < minDistance) {
+          closestIndex = i;
+          minDistance = distance;
         }
+      }
+
+      return closestIndex;
+    };
+    const handlePostionChange = (position, duration, end = false) => {
+      if (end) {
+        console.log("end", translateY.value);
+        setLastPosition(translateY.value);
+        setLastIndexPosition(getPositionIndex(position));
+      }
       if (duration === 0) {
         translateY.value = position;
       } else {
         translateY.value = withTiming(position, { duration: duration });
       }
-    
 
       if (onPositionChange) {
         onPositionChange(position, duration > 0 ? true : false, end);
       }
     };
 
-    useFocusEffect(
-      React.useCallback(() => {
-        // Réinitialiser la position du panneau lorsque l'écran est focalisé
+    // useEffect(() => {
+    //   if (!initialHeightRef.current || initialHeightRef.current === 0) return;
 
-        handlePostionChange(positionValues[0], 300, true);
-        setIsFullyOpen(false);
-        //if (onPanelToggle) onPanelToggle(false); // Notify panel is closed
-      }, [translateY, parentHeight])
-    );
+    //   if (
+    //     lastPosition !== initialHeightRef.current &&
+    //     lastPosition !== 1 &&
+    //     Platform.OS !== "ios"
+    //   ) {
+    //     handlePostionChange(positionValues[lastIndexPosition], 300, true);
+    //   } else {
+    //     handlePostionChange(positionValues[0], 300, true);
+    //   }
+    //   setIsFullyOpen(false);
+    // }, [initialHeightRef.current]);
 
     useImperativeHandle(ref, () => ({
       openAtHalf: (pos) => {
@@ -72,7 +114,7 @@ const SwipeUp = forwardRef(
         // //if (onPanelToggle) onPanelToggle(true); // Indiquer que le panneau est ouvert à 50%
       },
       openAtLastPosition: () => {
-        handlePostionChange(lastPosition, 300, true);
+        handlePostionChange(positionValues[lastIndexPosition], 300, true);
       },
       openAtPosition: (pos) => {
         // Ouvrir le panneau à la position spécifiée
@@ -80,7 +122,7 @@ const SwipeUp = forwardRef(
       },
       openAtFull: () => {
         //translateY.value = withTiming(0, { duration: 300 });
-        handlePostionChange(0, 300,true);
+        handlePostionChange(0, 300, true);
         setIsFullyOpen(true);
       },
       close: () => {
@@ -155,14 +197,14 @@ const SwipeUp = forwardRef(
     }));
 
     const handleClose = () => {
-      handlePostionChange(positionValues[0], 300,true);
+      handlePostionChange(positionValues[0], 300, true);
       //translateY.value = withTiming(positionValues[0], { duration: 300 });
       setIsFullyOpen(false);
       //if (onPanelToggle) onPanelToggle(false); // Notify panel is closed
     };
 
     return (
-      <View style={{ flex: 1, height: "100%" }} >
+      <View style={{ flex: 1, height: "100%" }}>
         <PanGestureHandler
           onGestureEvent={onGestureEvent}
           onBegan={onGestureBegin}
