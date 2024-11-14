@@ -16,6 +16,7 @@ import {
   distanceBetween,
   geohashForLocation,
 } from "geofire-common";
+import { Alert } from "react-native";
 
 // Fonction pour déterminer la couleur selon le type de lieu
 const getColorByType = (type) => {
@@ -92,14 +93,10 @@ async function queryNearbyPlaces(center, radiusInM) {
 /* Fonction pour ajouter un lieu */
 async function addPlace(place, userInfo) {
   try {
-    console.log("place : " + JSON.stringify(place.type));
-
-    // Validation des données requises
     if (!place.name || !place.type || !place.latitude || !place.longitude) {
       throw new Error("Informations manquantes");
     }
 
-    // Validation du rating
     if (place.rating < 0 || place.rating > 5) {
       throw new Error("Note invalide");
     }
@@ -109,7 +106,6 @@ async function addPlace(place, userInfo) {
 
     console.log("place : " + place);
 
-    // Structure des données à envoyer
     const placeData = {
       name: place.name.trim(),
       type: place.type,
@@ -128,7 +124,6 @@ async function addPlace(place, userInfo) {
       geohash,
     };
 
-    // Envoi à Firebase
     const docRef = await addDoc(collection(db, "places"), placeData);
 
     return {

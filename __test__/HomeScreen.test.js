@@ -1,27 +1,27 @@
 // __tests__/HomeScreen.test.js
 
-import React from 'react';
-import { render, fireEvent, act } from '@testing-library/react-native';
-import * as Location from 'expo-location';
-import { getDistance } from 'geolib';
-import { UserContext } from '../context/UserContext';
-import HomeScreen from '../app/(tabs)';
-import { queryNearbyPlaces, addPlace } from '../utils/functions';
+import React from "react";
+import { render, fireEvent, act } from "@testing-library/react-native";
+import * as Location from "expo-location";
+import { getDistance } from "geolib";
+import { UserContext } from "../context/UserContext";
+import HomeScreen from "../app/(tabs)";
+import { queryNearbyPlaces, addPlace } from "../utils/functions";
 
 // Mocks
-jest.mock('expo-location');
-jest.mock('geolib');
-jest.mock('../utils/functions');
-jest.mock('react-native-maps');
-jest.mock('@expo/vector-icons');
-jest.mock('react-native-gesture-handler');
-jest.mock('expo-router', () => ({
+jest.mock("expo-location");
+jest.mock("geolib");
+jest.mock("../utils/functions");
+jest.mock("react-native-maps");
+jest.mock("@expo/vector-icons");
+jest.mock("react-native-gesture-handler");
+jest.mock("expo-router", () => ({
   useRouter: () => ({
     push: jest.fn(),
   }),
 }));
 
-describe('HomeScreen', () => {
+describe("HomeScreen", () => {
   const mockUserLocation = {
     coords: {
       latitude: 48.8566,
@@ -30,24 +30,26 @@ describe('HomeScreen', () => {
   };
 
   const mockUserContext = {
-    userInfo: { id: 'test-user' },
+    userInfo: { id: "test-user" },
     isAuthenticated: true,
   };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    
-    Location.requestForegroundPermissionsAsync.mockResolvedValue({ status: 'granted' });
+
+    Location.requestForegroundPermissionsAsync.mockResolvedValue({
+      status: "granted",
+    });
     Location.getCurrentPositionAsync.mockResolvedValue(mockUserLocation);
     Location.getLastKnownPositionAsync.mockResolvedValue(mockUserLocation);
-    Location.reverseGeocodeAsync.mockResolvedValue([{ city: 'Paris' }]);
+    Location.reverseGeocodeAsync.mockResolvedValue([{ city: "Paris" }]);
     getDistance.mockReturnValue(500);
     queryNearbyPlaces.mockResolvedValue([
-      { id: '1', latitude: 48.8566, longitude: 2.3522, type: 'Museum' }
+      { id: "1", latitude: 48.8566, longitude: 2.3522, type: "Museum" },
     ]);
   });
 
-  test('demande les permissions de localisation au démarrage', async () => {
+  test("demande les permissions de localisation au démarrage", async () => {
     await act(async () => {
       render(
         <UserContext.Provider value={mockUserContext}>
@@ -59,7 +61,7 @@ describe('HomeScreen', () => {
     expect(Location.requestForegroundPermissionsAsync).toHaveBeenCalled();
   });
 
-  test('effectue une requête des lieux proches', async () => {
+  test("effectue une requête des lieux proches", async () => {
     await act(async () => {
       render(
         <UserContext.Provider value={mockUserContext}>
@@ -74,7 +76,7 @@ describe('HomeScreen', () => {
     );
   });
 
-  test('met à jour la position utilisateur lors du changement de localisation', async () => {
+  test("met à jour la position utilisateur lors du changement de localisation", async () => {
     const { getByTestId } = render(
       <UserContext.Provider value={mockUserContext}>
         <HomeScreen />
@@ -85,19 +87,19 @@ describe('HomeScreen', () => {
       nativeEvent: {
         coordinate: {
           latitude: 48.85,
-          longitude: 2.35
-        }
-      }
+          longitude: 2.35,
+        },
+      },
     };
 
     await act(async () => {
-      fireEvent(getByTestId('map-view'), 'userLocationChange', newLocation);
+      fireEvent(getByTestId("map-view"), "userLocationChange", newLocation);
     });
 
     expect(getDistance).toHaveBeenCalled();
   });
 
-  test('ajoute un nouveau lieu correctement', async () => {
+  test("ajoute un nouveau lieu correctement", async () => {
     const { getByTestId, getByPlaceholderText } = render(
       <UserContext.Provider value={mockUserContext}>
         <HomeScreen />
@@ -105,18 +107,24 @@ describe('HomeScreen', () => {
     );
 
     const placeData = {
-      name: 'Test Place',
-      type: 'Museum',
+      name: "Test Place",
+      type: "Museum",
       rating: 4,
-      description: 'Test Description'
+      description: "Test Description",
     };
 
     await act(async () => {
-      fireEvent.changeText(getByPlaceholderText('Nom de votre Adresse'), placeData.name);
-      fireEvent.changeText(getByPlaceholderText('Description de votre Adresse'), placeData.description);
-      fireEvent.press(getByTestId('type-Museum'));
-      fireEvent.press(getByTestId('rating-4'));
-      fireEvent.press(getByTestId('submit-place'));
+      fireEvent.changeText(
+        getByPlaceholderText("Nom de votre Adresse"),
+        placeData.name
+      );
+      fireEvent.changeText(
+        getByPlaceholderText("Description de votre Adresse"),
+        placeData.description
+      );
+      fireEvent.press(getByTestId("type-Museum"));
+      fireEvent.press(getByTestId("rating-4"));
+      fireEvent.press(getByTestId("submit-place"));
     });
 
     expect(addPlace).toHaveBeenCalledWith(
@@ -125,7 +133,7 @@ describe('HomeScreen', () => {
     );
   });
 
-  test('gère correctement le délai entre les requêtes', async () => {
+  test("gère correctement le délai entre les requêtes", async () => {
     const { getByTestId } = render(
       <UserContext.Provider value={mockUserContext}>
         <HomeScreen />
@@ -134,15 +142,15 @@ describe('HomeScreen', () => {
 
     // Première requête
     await act(async () => {
-      fireEvent(getByTestId('map-view'), 'userLocationChange', {
-        nativeEvent: { coordinate: mockUserLocation.coords }
+      fireEvent(getByTestId("map-view"), "userLocationChange", {
+        nativeEvent: { coordinate: mockUserLocation.coords },
       });
     });
 
     // Deuxième requête immédiate (devrait être ignorée)
     await act(async () => {
-      fireEvent(getByTestId('map-view'), 'userLocationChange', {
-        nativeEvent: { coordinate: mockUserLocation.coords }
+      fireEvent(getByTestId("map-view"), "userLocationChange", {
+        nativeEvent: { coordinate: mockUserLocation.coords },
       });
     });
 
