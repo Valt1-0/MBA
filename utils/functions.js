@@ -6,8 +6,12 @@ import {
   orderBy,
   startAt,
   endAt,
+  addDoc,
+  deleteDoc,
+  doc,
 } from "firebase/firestore";
-import { geohashQueryBounds, distanceBetween } from "geofire-common";
+import { geohashQueryBounds, distanceBetween, geohashForLocation } from "geofire-common";
+
 
 // Fonction pour déterminer la couleur selon le type de lieu
 const getColorByType = (type) => {
@@ -82,9 +86,55 @@ async function queryNearbyPlaces(center, radiusInM) {
   return matchingDocs;
 }
 /* Fonction pour ajouter un lieu */
-async function addPlace(place) {
-  // Ajouter le lieu à la collection "places"
-  await addDoc(collection(db, "places"), place);
+async function addPlace(place, userInfo) {
+  try {
+    // Validation des données requises
+    if (!place.name || !place.type || !place.latitude || !place.longitude) {
+      throw new Error("Informations manquantes");
+    }
+
+    // Validation du rating
+    if (place.rating < 0 || place.rating > 5) {
+      throw new Error("Note invalide");
+    }
+
+    // Création du geohash pour la recherche géographique
+    const geohash = geohashForLocation([place.latitude, place.longitude]);
+
+    // Structure des données à envoyer
+    const placeData = {
+      name: place.name.trim(),
+      type: place.type,
+      rating: place.rating,
+      isPublic: place.isPublic ?? true,
+      createdAt: new Date().toISOString(),
+      createdBy: {
+        uid: userInfo.uid,
+        displayName: userInfo.displayName || "Anonyme",
+      },
+      location: {
+        latitude: place.latitude,
+        longitude: place.longitude,
+      },
+      geohash,
+      description: place.description || "",
+    };
+
+    // Envoi à Firebase
+    const docRef = await addDoc(collection(db, "places"), placeData);
+
+    return {
+      success: true,
+      id: docRef.id,
+      message: "Lieu ajouté avec succès",
+    };
+  } catch (error) {
+    console.error("Erreur lors de l'ajout du lieu:", error);
+    throw {
+      success: false,
+      error: error.message || "Erreur lors de l'ajout du lieu",
+    };
+  }
 }
 
 /* Fonction pour supprimer un lieu */
@@ -93,4 +143,10 @@ async function deletePlace(placeId) {
   await deleteDoc(doc(db, "places", placeId));
 }
 
-export { getColorByType, getIconByType, queryNearbyPlaces };
+export {
+  getColorByType,
+  getIconByType,
+  queryNearbyPlaces,
+  addPlace,
+  deletePlace,
+};

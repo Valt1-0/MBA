@@ -23,7 +23,7 @@ import { ScrollView } from "react-native-gesture-handler";
 import * as Location from "expo-location";
 import { FontAwesome, FontAwesome6 } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
-import { getIconByType, queryNearbyPlaces } from "../../utils/functions";
+import { getIconByType, queryNearbyPlaces, addPlace } from "../../utils/functions";
 
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import SwipeUp from "../../components/SwipeUp";
@@ -33,6 +33,8 @@ import { useSegments, usePathname } from "expo-router";
 import RangeSlider from "../../components/Slider";
 import { TabView, SceneMap, TabBar } from "react-native-tab-view";
 import ContactInfo from "../../components/InformationLocation";
+import { UserContext } from "../../context/UserContext";
+import { useRouter } from "expo-router";
 import { AnimatedMapView } from "react-native-maps/lib/MapView";
 import CommentLocation from "../../components/CommentLocation";
 import { getDistance } from "geolib";
@@ -51,6 +53,7 @@ const HomeScreen = () => {
     isAddingMarker: false,
     markerForm: {
       name: "",
+      placeholder: "Nom de votre Adresse",
       type: "",
       rating: 0,
     },
@@ -58,6 +61,8 @@ const HomeScreen = () => {
     lastQueryLocation: null,
     lastQueryTimestamp: null,
   });
+  const { userInfo, isAuthenticated } = React.useContext(UserContext);
+  const router = useRouter();
 
   const layout = useWindowDimensions();
   const index = state.index;
@@ -388,6 +393,43 @@ const HomeScreen = () => {
     }
   };
 
+  const handleAddPlace = async () => {
+    try {
+      if (!isAuthenticated) {
+        router.push("/auth");
+        return;
+      }
+
+      const placeData = {
+        name: markerForm.name,
+        type: markerForm.type,
+        rating: markerForm.rating,
+        isPublic: markerForm.isPublic,
+        latitude: tempMarker.latitude,
+        longitude: tempMarker.longitude,
+        description: markerForm.description,
+      };
+
+      const result = await addPlace(placeData, userInfo);
+
+      if (result.success) {
+        // Reset form et fermer le swipe up
+        setAllValues({
+          isAddingMarker: false,
+          MarkerForm: {
+            name: "",
+            type: "",
+            rating: 0,
+          },
+          tempMarker: null,
+        });
+        swipeUpRef.current?.openAtHalf(0);
+      }
+    } catch (error) {
+      Alert.alert("Erreur", error.message);
+    }
+  };
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <StatusBar hidden={true} />
@@ -503,6 +545,7 @@ const HomeScreen = () => {
               />
             </>
           ) : isAddingMarker ? (
+            // isAuthenticated ? (
             // Condition 2 : Ajout d'un marker
             <View className="top-4">
               <View className="flex flex-row items-center justify-between px-4">
@@ -536,30 +579,19 @@ const HomeScreen = () => {
                     size={17}
                     color="#4ACC4A"
                     onPress={() => {
-                      setAllValues({
-                        isAddingMarker: false,
-                        MarkerForm: {
-                          placeholder: "Nom de votre Adresse",
-                          type: "",
-                          rating: 0,
-                        },
-                        tempMarker: null,
-                      });
-                      swipeUpRef.current?.openAtHalf(0);
+                      handleAddPlace();
                     }}
                   />
                 </TouchableOpacity>
               </View>
               <TextInput
-                className="border border-gray-300 rounded-lg p-2 mt-4"
+                className="border border-gray-300 rounded-lg text-lg p-2 mt-4 mx-10 text-center"
                 placeholder={markerForm.placeholder}
                 value={markerForm.name}
-                onChangeText={
-                  (text) =>
-                    setAllValues({
-                      markerForm: { ...markerForm, name: text },
-                    })
-                  //setMarkerForm({ ...markerForm, name: text })
+                onChangeText={(text) =>
+                  setAllValues({
+                    markerForm: { ...markerForm, name: text },
+                  })
                 }
               />
 
@@ -598,7 +630,7 @@ const HomeScreen = () => {
                 ))}
               </ScrollView>
               <View className="flex flex-row items-center justify-center mt-1">
-                <View className="w-16 flex items-center justify-center">
+                <View className="relative w-16 flex items-center justify-center">
                   <TouchableOpacity
                     onPress={() => {
                       setAllValues({
@@ -622,7 +654,7 @@ const HomeScreen = () => {
                     </View>
                   </TouchableOpacity>
                   {visibilityMessage && (
-                    <Text className="text-sm text-gray-600 mt-1">
+                    <Text className="absolute top-8 text-xs text-gray-600 w-full text-center">
                       {visibilityMessage}
                     </Text>
                   )}
@@ -648,6 +680,33 @@ const HomeScreen = () => {
               </View>
             </View>
           ) : (
+            // ) : (
+            //   <View className="flex items-center justify-center p-6">
+            //     <Text className="text-gray-700 font-semibold text-xl text-center mb-4">
+            //       Veuillez vous connecter pour ajouter une Adresse
+            //     </Text>
+            //     <TouchableOpacity
+            //       className="bg-[#DDC97A] px-6 py-3 rounded-lg flex-row items-center"
+            //       onPress={() => {
+            //         setAllValues({
+            //           isAddingMarker: false,
+            //           tempMarker: null,
+            //         });
+            //         router.push("/auth");
+            //       }}
+            //     >
+            //       <FontAwesome6
+            //         name="arrow-right-to-bracket"
+            //         size={20}
+            //         color="white"
+            //         className="mr-2"
+            //       />
+            //       <Text className="text-white font-semibold text-lg">
+            //         Se connecter
+            //       </Text>
+            //     </TouchableOpacity>
+            //   </View>
+            // )
             // État par défaut : Liste des nouveautés
             <>
               <Text className="text-gray-700 font-semibold top-3 text-xl">
