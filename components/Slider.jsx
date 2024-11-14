@@ -68,7 +68,7 @@ const RangeSlider = forwardRef(({ onSlidingComplete }, ref) => {
   };
 
   return (
-    <View className="absolute bottom-10 right-5">
+    <View className="absolute bottom-10 right-5 z-10">
       <TouchableWithoutFeedback onPress={handlePress}>
         <Animated.View
           style={{ width: widthAnim }}
@@ -82,7 +82,7 @@ const RangeSlider = forwardRef(({ onSlidingComplete }, ref) => {
               className="flex items-center justify-center w-full"
             >
               <Slider
-                style={{ width: "100%", height: 20 }}
+                style={{ width: "100%", height: 20, zIndex:10 }}
                 minimumValue={allowedValues[0]}
                 maximumValue={allowedValues[allowedValues.length - 1]}
                 step={1}
