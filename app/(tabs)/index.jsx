@@ -12,6 +12,7 @@ import {
   TextInput,
   Button,
   useWindowDimensions,
+  Keyboard,
 } from "react-native";
 import MapView, {
   Marker,
@@ -168,6 +169,30 @@ const HomeScreen = () => {
       NavigationBar.setBackgroundColorAsync("white");
     }
   }, []);
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      (event) => {
+        console.log(event.endCoordinates.height);
+        console.log("Clavier ouvert pourcentage", state.pourcentage);
+        if (state.pourcentage >= 0.1) {
+          swipeUpRef.current?.openAtPosition(event.endCoordinates.height);
+        }
+      }
+    );
+
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        swipeUpRef.current?.openAtLastPosition();
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, [state.pourcentage]);
 
   useEffect(() => {
     if (!state.userLocation || !state.followUser) return;
@@ -255,6 +280,7 @@ const HomeScreen = () => {
     final = false,
     end = false
   ) => {
+    console.log("Position", newPosition);
     const maxPosition = -(state.parentHeight * 0.5);
     const targetValue = Math.max(
       -(state.parentHeight - newPosition),
@@ -447,7 +473,6 @@ const HomeScreen = () => {
             onSlidingComplete={(value) => setAllValues({ sliderValue: value })}
           />
         </Animated.View>
-
         <SwipeUp
           ref={swipeUpRef}
           parentHeight={state.parentHeight}
@@ -484,7 +509,9 @@ const HomeScreen = () => {
                 value={markerForm.name}
                 onChangeText={
                   (text) =>
-                    setAllValues({ markerForm: { ...markerForm, name: text } })
+                    setAllValues({
+                      markerForm: { ...markerForm, name: text },
+                    })
                   //setMarkerForm({ ...markerForm, name: text })
                 }
               />

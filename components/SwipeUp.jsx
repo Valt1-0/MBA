@@ -19,6 +19,7 @@ const SwipeUp = forwardRef(
     const translateY = useSharedValue(parentHeight); // Le panneau commence en bas de l'écran
     const startY = useSharedValue(0); // Position de départ du geste
     const [isFullyOpen, setIsFullyOpen] = useState(false);
+    const [lastPosition, setLastPosition] = useState(parentHeight); // Dernière position du swipe
 
     // Define the positions for min and max open
 
@@ -30,11 +31,17 @@ const SwipeUp = forwardRef(
     const maxOpenPosition = positionValues[positions.length - 1]; // Maximum open position (80% screen height)
 
     const handlePostionChange = (position, duration, end = false) => {
+
+        if (end) {
+          console.log("end", translateY.value);
+          setLastPosition(translateY.value);
+        }
       if (duration === 0) {
         translateY.value = position;
       } else {
         translateY.value = withTiming(position, { duration: duration });
       }
+    
 
       if (onPositionChange) {
         onPositionChange(position, duration > 0 ? true : false, end);
@@ -45,7 +52,7 @@ const SwipeUp = forwardRef(
       React.useCallback(() => {
         // Réinitialiser la position du panneau lorsque l'écran est focalisé
 
-        handlePostionChange(positionValues[0], 300);
+        handlePostionChange(positionValues[0], 300, true);
         setIsFullyOpen(false);
         //if (onPanelToggle) onPanelToggle(false); // Notify panel is closed
       }, [translateY, parentHeight])
@@ -64,9 +71,16 @@ const SwipeUp = forwardRef(
         setIsFullyOpen(false);
         // //if (onPanelToggle) onPanelToggle(true); // Indiquer que le panneau est ouvert à 50%
       },
+      openAtLastPosition: () => {
+        handlePostionChange(lastPosition, 300, true);
+      },
+      openAtPosition: (pos) => {
+        // Ouvrir le panneau à la position spécifiée
+        handlePostionChange(pos, 200, true);
+      },
       openAtFull: () => {
         //translateY.value = withTiming(0, { duration: 300 });
-        handlePostionChange(0, 300);
+        handlePostionChange(0, 300,true);
         setIsFullyOpen(true);
       },
       close: () => {
@@ -141,14 +155,14 @@ const SwipeUp = forwardRef(
     }));
 
     const handleClose = () => {
-      handlePostionChange(positionValues[0], 300);
+      handlePostionChange(positionValues[0], 300,true);
       //translateY.value = withTiming(positionValues[0], { duration: 300 });
       setIsFullyOpen(false);
       //if (onPanelToggle) onPanelToggle(false); // Notify panel is closed
     };
 
     return (
-      <View style={{ flex: 1, height: "100%" }}>
+      <View style={{ flex: 1, height: "100%" }} >
         <PanGestureHandler
           onGestureEvent={onGestureEvent}
           onBegan={onGestureBegin}
