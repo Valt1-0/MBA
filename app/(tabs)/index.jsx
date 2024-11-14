@@ -526,13 +526,15 @@ const HomeScreen = () => {
               <Button
                 title="Ajouter"
                 onPress={() => {
-                  setTempMarker(null);
-                  setIsAddingMarker(false);
-                  setMarkerForm({
-                    name: "",
-                    placeholder: "Nom de votre Adresse",
-                    type: "",
-                    rating: 0,
+                  setAllValues({
+                    isAddingMarker: false,
+                    MarkerForm: {
+                      name: "",
+                      placeholder: "Nom de votre Adresse",
+                      type: "",
+                      rating: 0,
+                    },
+                    tempMarker: null,
                   });
                   swipeUpRef.current?.openAtHalf(0);
                 }}
