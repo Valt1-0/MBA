@@ -14,8 +14,7 @@ import {
 } from "firebase/auth";
 import { UserContext } from "../../context/UserContext";
 import { useFocusEffect, useRouter, useSegments } from "expo-router";
-
-// import { FontAwesome6 } from "@expo/vector-icons";
+import { FontAwesome6 } from "@expo/vector-icons";
 
 const AuthScreen = () => {
   const [email, setEmail] = useState("");
