@@ -11,7 +11,6 @@ import {
   Dimensions,
   TextInput,
   Button,
-  ScrollView,
   useWindowDimensions,
 } from "react-native";
 import MapView, {
@@ -64,17 +63,11 @@ const HomeScreen = () => {
   const layout = useWindowDimensions();
   const [index, setIndex] = React.useState(0);
 
-
-
-
-
   const SecondRoute = () => (
     <View>
       <Text> test</Text>
     </View>
   );
-
-
 
   const routes = [
     { key: "glimpse", title: "Aperçu" },
@@ -496,8 +489,11 @@ const HomeScreen = () => {
                 }
               />
 
-              <ScrollView horizontal className="flex flex-row mt-4 mb-2 h-16"
-              showsHorizontalScrollIndicator>
+              <ScrollView
+                horizontal
+                className="flex flex-row mt-4 mb-2 h-16"
+                showsHorizontalScrollIndicator
+              >
                 {[
                   "Tourism",
                   "Museum",
@@ -548,23 +544,6 @@ const HomeScreen = () => {
               <Text className="text-gray-700 font-semibold top-3 text-xl">
                 Nouveautés à {state.city}
               </Text>
-              <FlatList
-                horizontal
-                data={state.places}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                  <TouchableOpacity onPress={() => handleMarkerPress(item)}>
-                    <View style={styles.placeCard}>
-                      <FontAwesome6
-                        name={getIconByType(item.type)}
-                        size={20}
-                        color={getColorByType(item.type)}
-                      />
-                      <Text style={{ color: "#4A4A4A" }}>{item.name}</Text>
-                    </View>
-                  </TouchableOpacity>
-                )}
-              />
             </>
           )}
         </SwipeUp>
