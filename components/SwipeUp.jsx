@@ -58,7 +58,7 @@ const SwipeUp = forwardRef(
         if (pos !== undefined) {
           position = positionValues[pos];
         }
-        handlePostionChange(position, 300,true);
+        handlePostionChange(position, 300, true);
         //translateY.value = withTiming(position, { duration: 300 });
 
         setIsFullyOpen(false);
@@ -125,18 +125,14 @@ const SwipeUp = forwardRef(
           pos = i;
         }
       }
-      // Définir la position finale
 
-      handlePostionChange(closestPosition, 300,true);
+      handlePostionChange(closestPosition, 300, true);
       //translateY.value = withTiming(closestPosition, { duration: 300 });
 
-      // Mettre à jour l'état en fonction de la position finale
       if (closestPosition === 0) {
         setIsFullyOpen(true);
-        //if (onPanelToggle) onPanelToggle(true); // Indiquer que le panneau est ouvert à 100%
       } else {
         setIsFullyOpen(false);
-        //if (onPanelToggle) onPanelToggle(true); // Indiquer que le panneau est ouvert à une position intermédiaire
       }
     };
 

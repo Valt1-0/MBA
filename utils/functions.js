@@ -33,8 +33,10 @@ const getIconByType = (type) => {
       return "tree";
     case "Education":
       return "graduation-cap";
+    case "Jedi":
+      return "jedi";
     default:
-      return "map-marker"; // Icône par défaut
+      return "map-pin"; // Icône par défaut
   }
 };
 

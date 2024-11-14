@@ -19,8 +19,8 @@ import MapView, {
   PROVIDER_GOOGLE,
   PROVIDER_DEFAULT,
 } from "react-native-maps";
+import { ScrollView } from "react-native-gesture-handler";
 import * as Location from "expo-location";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { FontAwesome, FontAwesome6 } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { getColorByType, getIconByType } from "../../utils/functions";
@@ -234,7 +234,7 @@ const HomeScreen = () => {
       longitude: place.longitude,
     };
 
-    await swipeUpRef?.current?.openAtHalf(1);
+    await swipeUpRef?.current?.openAtHalf(2);
     await updateCamera(userCoords, state.pourcentage);
   };
 
@@ -255,6 +255,7 @@ const HomeScreen = () => {
       // });
       // setIsAddingMarker(true);
     }
+    swipeUpRef.current?.openAtHalf(1);
   };
   const handleSwipePositionChange = async (
     newPosition,
@@ -422,7 +423,14 @@ const HomeScreen = () => {
                 longitude: tempMarker.longitude,
               }}
               opacity={blinkAnim}
-            />
+              tracksViewChanges={false}
+            >
+              <FontAwesome6
+                name={getIconByType(markerForm.type)}
+                size={24}
+                color="#4A4A4A"
+              />
+            </Marker.Animated>
           )}
         </MapView>
         <Animated.View
@@ -443,7 +451,6 @@ const HomeScreen = () => {
           )}
           <RangeSlider
             ref={sliderRef}
-            style={{ width: "80%", alignSelf: "center" }}
             onSlidingComplete={(value) => setAllValues({ sliderValue: value })}
           />
         </Animated.View>
@@ -452,7 +459,7 @@ const HomeScreen = () => {
           ref={swipeUpRef}
           parentHeight={state.parentHeight}
           onPositionChange={handleSwipePositionChange}
-          positions={[10, 50, 100]}
+          positions={[10, 35, 50, 100]}
         >
           <View className="h-1 w-20 bg-gray-300 rounded-full self-center mb-2 top-1" />
           {state.selectedPlace ? (
@@ -474,9 +481,13 @@ const HomeScreen = () => {
             </>
           ) : isAddingMarker ? (
             // Condition 2 : Ajout d'un marker
-            <View className="p-4">
+            <View className="">
+              <Text className="text-gray-700 font-semibold text-xl text-center">
+                Ajouter un lieu
+              </Text>
               <TextInput
-                placeholder="Nom du lieu"
+                className="border border-gray-300 rounded-lg p-2 mt-4"
+                placeholder={markerForm.placeholder}
                 value={markerForm.name}
                 onChangeText={
                   (text) =>
@@ -485,8 +496,17 @@ const HomeScreen = () => {
                 }
               />
 
-              <ScrollView horizontal className="flex flex-row pb-2">
-                {["person-walking", "food", "park", "museum"].map((type) => (
+              <ScrollView horizontal className="flex flex-row mt-4 mb-2 h-16"
+              showsHorizontalScrollIndicator>
+                {[
+                  "Tourism",
+                  "Museum",
+                  "Cinema",
+                  "Theater",
+                  "Park",
+                  "Education",
+                  "Jedi",
+                ].map((type) => (
                   <TouchableOpacity
                     key={type}
                     onPress={() =>
@@ -494,18 +514,33 @@ const HomeScreen = () => {
                     }
                     //setMarkerForm({ ...markerForm, type })}
                     className={`
-        mx-2 p-3 rounded-full border border-gray-300
-        ${markerForm.type === type ? "bg-gray-100 border-gray-500" : ""}
+        mx-2 w-12 h-12 rounded-full border border-gray-300
+        flex items-center justify-center
+        ${markerForm.type === type ? "bg-gray-100 border-[#DDC97A]" : ""}
       `}
                   >
                     <FontAwesome6
                       name={getIconByType(type)}
-                      size={20}
-                      color={getColorByType(type)}
+                      size={17}
+                      color="#4A4A4A"
                     />
                   </TouchableOpacity>
                 ))}
               </ScrollView>
+              <Button
+                title="Ajouter"
+                onPress={() => {
+                  setTempMarker(null);
+                  setIsAddingMarker(false);
+                  setMarkerForm({
+                    name: "",
+                    placeholder: "Nom de votre Adresse",
+                    type: "",
+                    rating: 0,
+                  });
+                  swipeUpRef.current?.openAtHalf(0);
+                }}
+              />
             </View>
           ) : (
             // État par défaut : Liste des nouveautés
