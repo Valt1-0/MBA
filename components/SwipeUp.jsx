@@ -204,7 +204,7 @@ const SwipeUp = forwardRef(
     };
 
     return (
-      <View style={{ flex: 1, height: "100%" }}>
+      <View style={{ flex: 1, height: "100%",zIndex:120 }}>
         <PanGestureHandler
           onGestureEvent={onGestureEvent}
           onBegan={onGestureBegin}

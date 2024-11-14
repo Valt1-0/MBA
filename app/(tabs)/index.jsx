@@ -35,6 +35,7 @@ import { TabView, SceneMap, TabBar } from "react-native-tab-view";
 import ContactInfo from "../../components/InformationLocation";
 import { AnimatedMapView } from "react-native-maps/lib/MapView";
 import CommentLocation from "../../components/CommentLocation";
+import { getDistance } from "geolib";
 
 const HomeScreen = () => {
   const [state, setState] = useState({
@@ -54,6 +55,8 @@ const HomeScreen = () => {
       rating: 0,
     },
     index: 0,
+    lastQueryLocation: null,
+    lastQueryTimestamp: null,
   });
 
   const layout = useWindowDimensions();
@@ -159,17 +162,59 @@ const HomeScreen = () => {
 
   useEffect(() => {
     if (!state.userLocation) return;
+
+    // Vérifier si c'est la première requête
+    if (!state.lastQueryTimestamp || !state.lastQueryLocation) {
+      performQuery();
+      return;
+    }
+
+    // Vérifier le délai (30 secondes)
+    const now = Date.now();
+    const timeSinceLastQuery = now - state.lastQueryTimestamp;
+    const MIN_DELAY = 30000; // 30 secondes en millisecondes
+
+    if (timeSinceLastQuery < MIN_DELAY) {
+      console.log("Délai minimum non atteint");
+      return;
+    }
+
+    // Calculer la distance depuis la dernière requête
+    const distance = getDistance(
+      {
+        latitude: state.lastQueryLocation.latitude,
+        longitude: state.lastQueryLocation.longitude,
+      },
+      {
+        latitude: state.userLocation.latitude,
+        longitude: state.userLocation.longitude,
+      }
+    );
+
+    // Si la distance est supérieure à 400m, faire la requête
+    if (distance > 400) {
+      performQuery();
+    }
+  }, [state.userLocation, state.sliderValue]);
+
+  // Modifier la fonction performQuery
+  const performQuery = async () => {
+    console.log("Performing query...");
     const center = [state.userLocation.latitude, state.userLocation.longitude];
     const radiusInM = state.sliderValue * 100;
 
-    queryNearbyPlaces(center, radiusInM).then((docs) => {
-      const placesData = docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-      setAllValues({ places: placesData });
+    const docs = await queryNearbyPlaces(center, radiusInM);
+    const placesData = docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    setAllValues({
+      places: placesData,
+      lastQueryLocation: state.userLocation,
+      lastQueryTimestamp: Date.now(), // Ajouter le timestamp
     });
-  }, [state.userLocation, state.sliderValue]);
+  };
 
   useEffect(() => {
     (async () => {
@@ -377,8 +422,7 @@ const HomeScreen = () => {
           loadingEnabled={true}
         >
           {state.places.map((place) => {
-
-            if(!place?.latitude || !place?.longitude) return null;
+            if (!place?.latitude || !place?.longitude) return null;
             return (
               <Marker
                 key={place.id}
@@ -418,12 +462,10 @@ const HomeScreen = () => {
             </Marker.Animated>
           )}
         </AnimatedMapView>
-        <Animated.View
-          style={{ transform: [{ translateY: buttonAnim }], zIndex: 3 }}
-        >
+        <Animated.View style={{ transform: [{ translateY: buttonAnim }] }}>
           {!state.followUser && (
             <TouchableOpacity
-              className="absolute bottom-10 left-5 z-10"
+              className="absolute bottom-10 left-5 "
               onPress={(e) => {
                 handleMyLocationPress();
               }}
@@ -459,12 +501,6 @@ const HomeScreen = () => {
                 initialLayout={{ width: layout.width }}
                 renderTabBar={renderTabBar}
               />
-              <Text className="text-gray-700 font-semibold top-3 text-xl">
-                {state.selectedPlace.name}
-              </Text>
-              <Text className="text-gray-500">
-                {state.selectedPlace.description}
-              </Text>
             </>
           ) : isAddingMarker ? (
             // Condition 2 : Ajout d'un marker
