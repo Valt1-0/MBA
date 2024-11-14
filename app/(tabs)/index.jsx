@@ -23,7 +23,11 @@ import { ScrollView } from "react-native-gesture-handler";
 import * as Location from "expo-location";
 import { FontAwesome, FontAwesome6 } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
-import { getIconByType, queryNearbyPlaces, addPlace } from "../../utils/functions";
+import {
+  getIconByType,
+  queryNearbyPlaces,
+  addPlace,
+} from "../../utils/functions";
 
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import SwipeUp from "../../components/SwipeUp";
@@ -177,7 +181,7 @@ const HomeScreen = () => {
     // Vérifier le délai (30 secondes)
     const now = Date.now();
     const timeSinceLastQuery = now - state.lastQueryTimestamp;
-    const MIN_DELAY = 30000; // 30 secondes en millisecondes
+    const MIN_DELAY = 60000; // 30 secondes en millisecondes
 
     if (timeSinceLastQuery < MIN_DELAY) {
       console.log("Délai minimum non atteint");
@@ -204,21 +208,38 @@ const HomeScreen = () => {
 
   // Modifier la fonction performQuery
   const performQuery = async () => {
-    console.log("Performing query...");
-    const center = [state.userLocation.latitude, state.userLocation.longitude];
-    const radiusInM = state.sliderValue * 100;
+    try {
+      console.log("Performing query...");
+      const center = [
+        state.userLocation.latitude,
+        state.userLocation.longitude,
+      ];
+      const radiusInM = state.sliderValue * 100;
 
-    const docs = await queryNearbyPlaces(center, radiusInM);
-    const placesData = docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+      const docs = await queryNearbyPlaces(center, radiusInM);
+      const placesData = docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
 
-    setAllValues({
-      places: placesData,
-      lastQueryLocation: state.userLocation,
-      lastQueryTimestamp: Date.now(), // Ajouter le timestamp
-    });
+      setAllValues({
+        places: placesData,
+        lastQueryLocation: state.userLocation,
+        lastQueryTimestamp: Date.now(),
+      });
+    } catch (error) {
+      // Mise à jour du timestamp même en cas d'erreur
+      setAllValues({
+        lastQueryLocation: state.userLocation,
+        lastQueryTimestamp: Date.now(),
+      });
+
+      if (error.message.includes("quota exceeded")) {
+        console.log("Quota exceeded, waiting for next window...");
+      } else {
+        console.error("Query error:", error);
+      }
+    }
   };
 
   useEffect(() => {
