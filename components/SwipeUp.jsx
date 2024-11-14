@@ -69,8 +69,8 @@ const SwipeUp = forwardRef(
       return closestIndex;
     };
     const handlePostionChange = (position, duration, end = false) => {
+      console.log("position", end);
       if (end) {
-        console.log("end", translateY.value);
         setLastPosition(translateY.value);
         setLastIndexPosition(getPositionIndex(position));
       }

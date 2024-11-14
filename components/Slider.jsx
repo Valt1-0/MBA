@@ -6,14 +6,14 @@ import React, {
 } from "react";
 import { View, TouchableWithoutFeedback, Animated, Text } from "react-native";
 import { FontAwesome6 } from "@expo/vector-icons";
-import Slider from "@react-native-community/slider"; // Importer le composant Slider
+import Slider from "@react-native-community/slider";
 
 const RangeSlider = forwardRef(({ onSlidingComplete }, ref) => {
-  const widthAnim = useRef(new Animated.Value(64)).current; // Valeur initiale de la largeur (56 correspond à 14 * 4)
-  const opacityAnim = useRef(new Animated.Value(0)).current; // Valeur initiale de l'opacité
-  const [isExpanded, setIsExpanded] = useState(false); // État pour suivre si la vue est élargie
-  const [sliderValue, setSliderValue] = useState(1); // Valeur initiale du curseur
-  const allowedValues = [1, 5, 10, 15, 20]; // Valeurs autorisées
+  const widthAnim = useRef(new Animated.Value(64)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [sliderValue, setSliderValue] = useState(1);
+  const allowedValues = [1, 5, 10, 15, 20];
 
   useImperativeHandle(ref, () => ({
     close: () => {
@@ -22,11 +22,9 @@ const RangeSlider = forwardRef(({ onSlidingComplete }, ref) => {
   }));
 
   const handlePress = () => {
-    console.log("isExpanded", isExpanded);
     if (isExpanded) {
       close();
     } else {
-      // Élargir la largeur avant d'animer l'opacité à 1
       Animated.timing(widthAnim, {
         toValue: 200,
         duration: 300,
@@ -43,7 +41,6 @@ const RangeSlider = forwardRef(({ onSlidingComplete }, ref) => {
   };
 
   const close = () => {
-    // Animer l'opacité à 0 avant de rétracter la largeur
     Animated.timing(opacityAnim, {
       toValue: 0,
       duration: 300,
@@ -60,7 +57,6 @@ const RangeSlider = forwardRef(({ onSlidingComplete }, ref) => {
   };
 
   const handleValueChange = (value) => {
-    // Trouver la valeur autorisée la plus proche
     const closestValue = allowedValues.reduce((prev, curr) =>
       Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev
     );
@@ -68,21 +64,15 @@ const RangeSlider = forwardRef(({ onSlidingComplete }, ref) => {
   };
 
   return (
-    <View className="absolute bottom-10 right-5 z-10">
-      <TouchableWithoutFeedback
-        onPress={handlePress}
-      >
+    <View style={{ position: 'absolute', bottom: 10, right: 5, zIndex: 10 }}>
+      <TouchableWithoutFeedback onPress={handlePress}>
         <Animated.View
-          style={{ width: widthAnim }}
-          className="h-16 bg-white border border-slate-300 rounded-3xl items-center justify-center p-2"
+          style={{ width: widthAnim, height: 64, backgroundColor: 'white', borderColor: '#D3D3D3', borderWidth: 1, borderRadius: 24, alignItems: 'center', justifyContent: 'center', padding: 8 }}
         >
           {!isExpanded ? (
             <FontAwesome6 name="ruler" size={24} color="#777777" />
           ) : (
-            <Animated.View
-              style={{ opacity: opacityAnim }}
-              className="flex items-center justify-center w-full"
-            >
+            <Animated.View style={{ opacity: opacityAnim, alignItems: 'center', justifyContent: 'center', width: '100%' }}>
               <Slider
                 style={{ width: "100%", height: 20, zIndex: 10 }}
                 minimumValue={allowedValues[0]}
@@ -90,12 +80,12 @@ const RangeSlider = forwardRef(({ onSlidingComplete }, ref) => {
                 step={1}
                 value={sliderValue}
                 onValueChange={handleValueChange}
-                onSlidingComplete={onSlidingComplete} // Ajoutez la méthode onSlidingComplete
+                onSlidingComplete={onSlidingComplete}
                 minimumTrackTintColor="#DDC97A"
                 maximumTrackTintColor="#D3D3D3"
                 thumbTintColor="#DDC97A"
               />
-              <Text className="text-center mt-2">{sliderValue} km</Text>
+              <Text style={{ textAlign: 'center', marginTop: 8 }}>{sliderValue} km</Text>
             </Animated.View>
           )}
         </Animated.View>

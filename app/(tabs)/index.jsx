@@ -53,6 +53,7 @@ const HomeScreen = () => {
     },
     index: 0,
   });
+
   const layout = useWindowDimensions();
   const index = state.index;
   const SecondRoute = () => (
@@ -227,11 +228,6 @@ const HomeScreen = () => {
         tempMarker: { latitude, longitude },
         isAddingMarker: true,
       });
-      // setTempMarker({
-      //   latitude: parseFloat(latitude),
-      //   longitude: parseFloat(longitude),
-      // });
-      // setIsAddingMarker(true);
     }
     swipeUpRef.current?.openAtHalf(1);
   };
@@ -450,7 +446,7 @@ const HomeScreen = () => {
               <TabView
                 navigationState={{ index, routes }}
                 renderScene={renderScene}
-                onIndexChange={(index) => setAllValues({ index: index })}
+                onIndexChange={(NewIndex) => setAllValues({ index: NewIndex })}
                 initialLayout={{ width: layout.width }}
                 renderTabBar={renderTabBar}
               />

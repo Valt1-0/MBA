@@ -8,7 +8,7 @@ export default function ContactInfo({ selectedPlace }) {
 
   useEffect(() => {
     if (selectedPlace) {
-      const { longitude, latitude } = selectedPlace;
+      const { longitude, latitude } = selectedPlace?.location;
       const apiKey = process.env.EXPO_PUBLIC_OPEN_ROUTE_SERVICE_API_KEY;
       const url = `https://api.openrouteservice.org/geocode/reverse?api_key=${apiKey}&point.lon=${longitude}&point.lat=${latitude}`;
 
@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 16,
-    marginLeft: 8,
+    marginLeft: 8, 
   },
   openText: {
     color: "green",

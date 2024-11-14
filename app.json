@@ -1,5 +1,6 @@
 {
   "expo": {
+    "newArchEnabled": true,
     "sdkVersion": "52.0.0",
     "name": "MBA",
     "slug": "MBA",
@@ -14,7 +15,7 @@
       [
         "expo-location",
         {
-          "NSLocationWhenInUseUsageDescription": "Permettez à Jolt d'utiliser votre localisation pour améliorer votre expérience."
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
         }
       ],
       ["expo-router"]
