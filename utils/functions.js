@@ -34,7 +34,7 @@ const getIconByType = (type) => {
     case "Education":
       return "graduation-cap";
     default:
-      return "map-marker"; // Icône par défaut
+      return "map-pin"; // Icône par défaut
   }
 };
 

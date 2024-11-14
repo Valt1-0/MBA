@@ -63,6 +63,7 @@ const HomeScreen = () => {
   const [isAddingMarker, setIsAddingMarker] = useState(false);
   const [markerForm, setMarkerForm] = useState({
     name: "",
+    placeholder: "Nom de votre Adresse",
     type: "",
     rating: 0,
   });
@@ -188,7 +189,7 @@ const HomeScreen = () => {
       longitude: place.longitude,
     };
 
-    await swipeUpRef?.current?.openAtHalf(1);
+    await swipeUpRef?.current?.openAtHalf(2);
     await updateCamera(userCoords, state.pourcentage);
   };
 
@@ -205,6 +206,7 @@ const HomeScreen = () => {
       });
       setIsAddingMarker(true);
     }
+    swipeUpRef.current?.openAtHalf(1);
   };
   const handleSwipePositionChange = async (
     newPosition,
@@ -372,7 +374,13 @@ const HomeScreen = () => {
                 longitude: tempMarker.longitude,
               }}
               opacity={blinkAnim}
-            />
+            >
+              <FontAwesome6
+                name={getIconByType(markerForm.type)}
+                size={24}
+                color="#4A4A4A"
+              />
+            </Marker.Animated>
           )}
         </MapView>
         <Animated.View
@@ -401,7 +409,7 @@ const HomeScreen = () => {
           ref={swipeUpRef}
           parentHeight={state.parentHeight}
           onPositionChange={handleSwipePositionChange}
-          positions={[10, 50, 100]}
+          positions={[10, 35, 50, 100]}
         >
           <View className="h-1 w-20 bg-gray-300 rounded-full self-center mb-2 top-1" />
           {state.selectedPlace ? (
@@ -417,28 +425,39 @@ const HomeScreen = () => {
           ) : isAddingMarker ? (
             // Condition 2 : Ajout d'un marker
             <View className="p-4">
+              <Text className="text-gray-700 font-semibold text-xl text-center">
+                Ajouter un lieu
+              </Text>
               <TextInput
-                placeholder="Nom du lieu"
+                className="border border-gray-300 p-1 top-2"
+                placeholder={markerForm.placeholder}
                 value={markerForm.name}
                 onChangeText={(text) =>
                   setMarkerForm({ ...markerForm, name: text })
                 }
               />
 
-              <ScrollView horizontal className="flex flex-row pb-2">
-                {["person-walking", "food", "park", "museum"].map((type) => (
+              <ScrollView horizontal className="flex flex-row top-2">
+                {[
+                  "Tourism",
+                  "Museum",
+                  "Cinema",
+                  "Theater",
+                  "Park",
+                  "Education",
+                ].map((type) => (
                   <TouchableOpacity
                     key={type}
                     onPress={() => setMarkerForm({ ...markerForm, type })}
                     className={`
-        mx-2 p-3 rounded-full border border-gray-300
+        m-2 p-3 rounded-full border border-gray-300
         ${markerForm.type === type ? "bg-gray-100 border-gray-500" : ""}
       `}
                   >
                     <FontAwesome6
                       name={getIconByType(type)}
-                      size={20}
-                      color={getColorByType(type)}
+                      size={17}
+                      color="#4A4A4A"
                     />
                   </TouchableOpacity>
                 ))}
