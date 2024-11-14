@@ -23,21 +23,12 @@ import { ScrollView } from "react-native-gesture-handler";
 import * as Location from "expo-location";
 import { FontAwesome, FontAwesome6 } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
-import { getColorByType, getIconByType } from "../../utils/functions";
-import { db } from "../../utils/firebase";
-import {
-  collection,
-  getDocs,
-  query,
-  orderBy,
-  startAt,
-  endAt,
-} from "firebase/firestore";
+import { getIconByType, queryNearbyPlaces } from "../../utils/functions";
+
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import SwipeUp from "../../components/SwipeUp";
 import { customMapStyle } from "../../utils/customMap";
 import * as NavigationBar from "expo-navigation-bar";
-import { geohashQueryBounds, distanceBetween } from "geofire-common";
 import { useSegments, usePathname } from "expo-router";
 import RangeSlider from "../../components/Slider";
 import { TabView, SceneMap, TabBar } from "react-native-tab-view";
@@ -98,6 +89,7 @@ const HomeScreen = () => {
   const tempMarker = state.tempMarker;
   const isAddingMarker = state.isAddingMarker;
   const markerForm = state.markerForm;
+  const blinkAnim = useRef(new Animated.Value(1)).current;
 
   const mapRef = useRef(null);
   const swipeUpRef = useRef(null);
@@ -106,7 +98,7 @@ const HomeScreen = () => {
   const segments = useSegments();
   const pathName = usePathname();
 
-  const blinkAnim = useRef(new Animated.Value(1)).current;
+  const [visibilityMessage, setVisibilityMessage] = useState(null);
 
   useEffect(() => {
     if (tempMarker) {
@@ -133,36 +125,6 @@ const HomeScreen = () => {
       ...newValues,
     }));
   };
-
-  async function queryNearbyPlaces(center, radiusInM) {
-    const bounds = geohashQueryBounds(center, radiusInM);
-    const promises = bounds.map((b) => {
-      const q = query(
-        collection(db, "places"),
-        orderBy("geohash"),
-        startAt(b[0]),
-        endAt(b[1])
-      );
-      return getDocs(q);
-    });
-
-    const snapshots = await Promise.all(promises);
-    const matchingDocs = [];
-
-    snapshots.forEach((snap) => {
-      snap.docs.forEach((doc) => {
-        const lat = doc.get("location").latitude;
-        const lng = doc.get("location").longitude;
-        const distanceInKm = distanceBetween([lat, lng], center);
-        const distanceInM = distanceInKm * 1000;
-        if (distanceInM <= radiusInM) {
-          matchingDocs.push(doc);
-        }
-      });
-    });
-
-    return matchingDocs;
-  }
 
   useEffect(() => {
     if (Platform.OS === "android") {
@@ -595,6 +557,55 @@ const HomeScreen = () => {
                   </TouchableOpacity>
                 ))}
               </ScrollView>
+              <View className="flex flex-row items-center justify-center mt-1">
+                <View className="w-16 flex items-center justify-center">
+                  <TouchableOpacity
+                    onPress={() => {
+                      setAllValues({
+                        markerForm: {
+                          ...markerForm,
+                          isPublic: !markerForm.isPublic,
+                        },
+                      });
+                      setVisibilityMessage(
+                        markerForm.isPublic ? "Privé" : "Public"
+                      );
+                      setTimeout(() => setVisibilityMessage(null), 2000);
+                    }}
+                  >
+                    <View className="h-8 flex items-center justify-center">
+                      <FontAwesome6
+                        name={markerForm.isPublic ? "eye" : "eye-slash"}
+                        size={17}
+                        color="#4A4A4A"
+                      />
+                    </View>
+                  </TouchableOpacity>
+                  {visibilityMessage && (
+                    <Text className="text-sm text-gray-600 mt-1">
+                      {visibilityMessage}
+                    </Text>
+                  )}
+                </View>
+
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <TouchableOpacity
+                    key={star}
+                    onPress={() =>
+                      setAllValues({
+                        markerForm: { ...markerForm, rating: star },
+                      })
+                    }
+                    className="mx-3"
+                  >
+                    <FontAwesome6
+                      name={star <= markerForm.rating ? "star" : "star"}
+                      size={24}
+                      color={star <= markerForm.rating ? "#DDC97A" : "#9CA3AF"}
+                    />
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
           ) : (
             // État par défaut : Liste des nouveautés
