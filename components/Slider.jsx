@@ -98,7 +98,7 @@ const RangeSlider = forwardRef(({ onSlidingComplete }, ref) => {
     };
 
   return (
-    <View style={{ position: "absolute", bottom: 10, right: 5, zIndex: 99 }}>
+    <View style={{ position: "absolute", bottom: 10, right: 5  }}>
       <TouchableWithoutFeedback onPress={handlePress}>
         <Animated.View
           style={{
@@ -131,7 +131,7 @@ const RangeSlider = forwardRef(({ onSlidingComplete }, ref) => {
               >
                 <Slider
                   ref={sliderRef}
-                  style={{ width: "100%", height: 20, zIndex: 10 }}
+                  style={{ width: "100%", height: 20  }}
                   minimumValue={allowedValues[0]}
                   maximumValue={allowedValues[allowedValues.length - 1]}
                   step={1}
