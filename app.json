@@ -1,7 +1,5 @@
 {
   "expo": {
-    "newArchEnabled": true,
-    "sdkVersion": "52.0.0",
     "name": "MBA",
     "slug": "MBA",
     "version": "1.0.0",
