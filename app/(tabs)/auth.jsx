@@ -26,9 +26,13 @@ const AuthScreen = () => {
   const { setUser, userInfo } = React.useContext(UserContext);
 
   const router = useRouter();
-  const segments = useSegments();
 
-  // Dans handleAuth
+  useEffect(() => {
+    if (userInfo) {
+      router.replace("/profile");
+    }
+  }, [userInfo]);
+
   const handleAuth = async () => {
     try {
       setLoading(true);
@@ -56,7 +60,6 @@ const AuthScreen = () => {
           );
           setUser(userCredential.user);
           setSuccess("Compte créé avec succès!");
-          router.push("/profile");
         } catch (error) {
           setError(error.message);
           return;
@@ -70,7 +73,6 @@ const AuthScreen = () => {
           );
           setUser(userCredential.user);
           setSuccess("Connexion réussie!");
-          router.push("/profile"); // Redirection vers profile
         } catch (error) {
           setError(error.message);
           return;
