@@ -43,6 +43,7 @@ import { AnimatedMapView } from "react-native-maps/lib/MapView";
 import CommentLocation from "../../components/CommentLocation";
 import { getDistance } from "geolib";
 
+
 const HomeScreen = () => {
   const [state, setState] = useState({
     places: [],
@@ -57,7 +58,7 @@ const HomeScreen = () => {
     isAddingMarker: false,
     markerForm: {
       name: "",
-      placeholder: "Nom de votre Adresse",
+      description: "",
       type: "",
       rating: 0,
     },
@@ -114,6 +115,9 @@ const HomeScreen = () => {
   const pathName = usePathname();
 
   const [visibilityMessage, setVisibilityMessage] = useState(null);
+
+  const [showCamera, setShowCamera] = useState(false);
+  const [photos, setPhotos] = useState([]);
 
   useEffect(() => {
     if (tempMarker) {
@@ -579,7 +583,6 @@ const HomeScreen = () => {
                       setAllValues({
                         isAddingMarker: false,
                         MarkerForm: {
-                          placeholder: "Nom de votre Adresse",
                           type: "",
                           rating: 0,
                         },
@@ -607,11 +610,23 @@ const HomeScreen = () => {
               </View>
               <TextInput
                 className="border border-gray-300 rounded-lg text-lg p-2 mt-4 mx-10 text-center"
-                placeholder={markerForm.placeholder}
+                placeholder="Nom de votre Adresse"
                 value={markerForm.name}
                 onChangeText={(text) =>
                   setAllValues({
                     markerForm: { ...markerForm, name: text },
+                  })
+                }
+              />
+              <TextInput
+                className="border border-gray-300 rounded-lg text-lg p-2 mt-4 mx-10 text-center"
+                placeholder="Description de votre Adresse"
+                multiline
+                numberOfLines={3}
+                value={markerForm.description}
+                onChangeText={(text) =>
+                  setAllValues({
+                    markerForm: { ...markerForm, description: text },
                   })
                 }
               />
@@ -635,12 +650,11 @@ const HomeScreen = () => {
                     onPress={() =>
                       setAllValues({ markerForm: { ...markerForm, type } })
                     }
-                    //setMarkerForm({ ...markerForm, type })}
-                    className={`
-        mx-2 w-12 h-12 rounded-full border border-gray-300
-        flex items-center justify-center
-        ${markerForm.type === type ? "bg-gray-100 border-[#DDC97A]" : ""}
-      `}
+                    className={`mx-2 w-12 h-12 rounded-full border border-gray-300 flex items-center justify-center ${
+                      markerForm.type === type
+                        ? "bg-gray-100 border-[#DDC97A]"
+                        : ""
+                    }`}
                   >
                     <FontAwesome6
                       name={getIconByType(type)}
@@ -699,6 +713,57 @@ const HomeScreen = () => {
                   </TouchableOpacity>
                 ))}
               </View>
+              <TouchableOpacity
+                className="bg-blue-500 p-3 rounded-lg flex-row items-center justify-center"
+                onPress={async () => {
+                  const { status } =
+                    await Camera.requestCameraPermissionsAsync();
+                  if (status === "granted") {
+                    setShowCamera(true);
+                  }
+                }}
+              >
+                <FontAwesome6
+                  name="camera"
+                  size={20}
+                  color="white"
+                  className="mr-2"
+                />
+                <Text className="text-white font-semibold">
+                  Prendre une photo
+                </Text>
+              </TouchableOpacity>
+
+              {/* Affichage des photos */}
+              {photos.length > 0 && (
+                <ScrollView
+                  horizontal
+                  className="mt-4"
+                  showsHorizontalScrollIndicator={false}
+                >
+                  {photos.map((photo, index) => (
+                    <View key={index} className="relative mr-2">
+                      <Image
+                        source={{ uri: photo.uri }}
+                        className="w-24 h-24 rounded-lg"
+                      />
+                      <TouchableOpacity
+                        className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1"
+                        onPress={() => {
+                          const newPhotos = [...photos];
+                          newPhotos.splice(index, 1);
+                          setPhotos(newPhotos);
+                          setAllValues({
+                            markerForm: { ...markerForm, images: newPhotos },
+                          });
+                        }}
+                      >
+                        <FontAwesome6 name="times" size={12} color="white" />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </ScrollView>
+              )}
             </View>
           ) : (
             // ) : (

@@ -105,6 +105,8 @@ async function addPlace(place, userInfo) {
     const placeData = {
       name: place.name.trim(),
       type: place.type,
+      description: place.description || "",
+      images: place.images || [],
       rating: place.rating,
       isPublic: place.isPublic ?? true,
       createdAt: new Date().toISOString(),
@@ -117,7 +119,6 @@ async function addPlace(place, userInfo) {
         longitude: place.longitude,
       },
       geohash,
-      description: place.description || "",
     };
 
     // Envoi à Firebase
