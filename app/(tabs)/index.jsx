@@ -135,9 +135,7 @@ const HomeScreen = () => {
     const keyboardDidShowListener = Keyboard.addListener(
       "keyboardDidShow",
       (event) => {
-        console.log(event.endCoordinates.height);
-        console.log("Clavier ouvert pourcentage", state.pourcentage);
-        if (state.pourcentage >= 0.1) {
+        if (state.pourcentage >= 0.1 && Platform.OS === "ios") {
           swipeUpRef.current?.openAtPosition(event.endCoordinates.height);
         }
       }
@@ -438,6 +436,7 @@ const HomeScreen = () => {
             onSlidingComplete={(value) => setAllValues({ sliderValue: value })}
           />
         </Animated.View>
+        
         <SwipeUp
           ref={swipeUpRef}
           parentHeight={state.parentHeight}

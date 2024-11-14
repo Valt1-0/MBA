@@ -2,13 +2,36 @@ import { Tabs, useNavigation } from "expo-router";
 import { FontAwesome6, Ionicons } from "@expo/vector-icons";
 import "../../global.css";
 import { UserContext } from "../../context/UserContext";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useNavigationState } from "@react-navigation/native";
+import { Keyboard } from "react-native";
 
 export default function TabLayout() {
   const { userInfo } = useContext(UserContext);
   const navigation = useNavigation();
   const state = useNavigationState((state) => state);
+  const [isKeyboardVisible, setKeyboardVisible] = useState(false);
+
+    useEffect(() => {
+      const keyboardDidShowListener = Keyboard.addListener(
+        "keyboardDidShow",
+        () => {
+          setKeyboardVisible(true);
+        }
+      );
+
+      const keyboardDidHideListener = Keyboard.addListener(
+        "keyboardDidHide",
+        () => {
+          setKeyboardVisible(false);
+        }
+      );
+
+      return () => {
+        keyboardDidShowListener.remove();
+        keyboardDidHideListener.remove();
+      };
+    }, []);
 
   return (
     <Tabs
@@ -16,6 +39,7 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: "#DDC97A",
         tabBarInactiveTintColor: "gray",
+        
       }}
     >
       <Tabs.Screen
@@ -31,7 +55,9 @@ export default function TabLayout() {
               color={focused ? "#DDC97A" : "gray"}
             />
           ),
+          tabBarStyle : {display: isKeyboardVisible ? "none" : "flex"}
         }}
+        
       />
       <Tabs.Screen
         name="profile"
