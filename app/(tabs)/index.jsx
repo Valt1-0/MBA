@@ -13,6 +13,7 @@ import {
   Button,
   useWindowDimensions,
   Keyboard,
+  Image,
 } from "react-native";
 import MapView, {
   Marker,
@@ -42,6 +43,7 @@ import { useRouter } from "expo-router";
 import { AnimatedMapView } from "react-native-maps/lib/MapView";
 import CommentLocation from "../../components/CommentLocation";
 import { getDistance } from "geolib";
+import * as ImagePicker from "expo-image-picker";
 
 const HomeScreen = () => {
   const [state, setState] = useState({
@@ -253,6 +255,16 @@ const HomeScreen = () => {
         return;
       }
 
+      const { status: imagePickerStatus } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (imagePickerStatus !== "granted") {
+        Alert.alert(
+          "Permission refusée",
+          "Nous avons besoin de votre permission pour accéder à vos photos"
+        );
+        return;
+      }
+
       let userLocation = await Location.getLastKnownPositionAsync({
         maxAge: 300000,
       });
@@ -441,10 +453,13 @@ const HomeScreen = () => {
         // Reset form et fermer le swipe up
         setAllValues({
           isAddingMarker: false,
-          MarkerForm: {
+          markerForm: {
             name: "",
-            type: "",
+            description: "",
+            type: "", // Reset du type
             rating: 0,
+            images: [],
+            isPublic: true,
           },
           tempMarker: null,
         });
@@ -470,12 +485,12 @@ const HomeScreen = () => {
     });
   };
 
-  // Fonction pour pick les images
   const pickImages = async () => {
     try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsMultipleSelection: true,
+      // Correction du type mediaTypes
+      let result = await ImagePicker.launchImageLibraryAsync({
+        allowsEditing: true,
+        aspect: [4, 3],
         quality: 0.7,
       });
 
@@ -490,7 +505,6 @@ const HomeScreen = () => {
           })
         );
 
-        setPhotos((prev) => [...prev, ...processedImages]);
         setAllValues({
           markerForm: {
             ...markerForm,
@@ -500,7 +514,7 @@ const HomeScreen = () => {
       }
     } catch (error) {
       console.error("Erreur sélection images:", error);
-      Alert.alert("Erreur", "Impossible de charger les images");
+      Alert.alert("Erreur", "Impossible de charger les images sélectionnées");
     }
   };
 
@@ -518,7 +532,7 @@ const HomeScreen = () => {
           ref={mapRef}
           onLongPress={(e) => handleMapPress(e)}
           customMapStyle={customMapStyle}
-          style={{ width: "100%", height: "100%"  }}
+          style={{ width: "100%", height: "100%" }}
           followsUserLocation={false}
           showsUserLocation={true}
           showsIndoors={false}
@@ -697,7 +711,9 @@ const HomeScreen = () => {
                   <TouchableOpacity
                     key={type}
                     onPress={() =>
-                      setAllValues({ markerForm: { ...markerForm, type } })
+                      setAllValues({
+                        markerForm: { ...markerForm, type: type },
+                      })
                     }
                     className={`mx-2 w-12 h-12 rounded-full border border-gray-300 flex items-center justify-center ${
                       markerForm.type === type
@@ -763,7 +779,7 @@ const HomeScreen = () => {
                 ))}
               </View>
               <TouchableOpacity
-                className="bg-blue-500 p-3 rounded-lg flex-row items-center justify-center mt-4 mx-10"
+                className="bg-[#DDC97A] p-3 rounded-lg flex-row items-center justify-center top-8 mx-10"
                 onPress={pickImages}
               >
                 <FontAwesome6
@@ -776,6 +792,35 @@ const HomeScreen = () => {
                   Sélectionner des photos
                 </Text>
               </TouchableOpacity>
+              {markerForm.images && markerForm.images.length > 0 && (
+                <ScrollView
+                  horizontal
+                  className="top-10 px-10"
+                  showsHorizontalScrollIndicator={false}
+                >
+                  {markerForm.images.map((img, index) => (
+                    <View key={index} className="relative mr-3 shadow-sm mt-3">
+                      <Image
+                        source={{ uri: img.uri }}
+                        className="w-24 h-24 rounded-xl"
+                        resizeMode="cover"
+                      />
+                      <TouchableOpacity
+                        className="absolute -top-3 -right-3 bg-red-500 w-7 h-7 rounded-full items-center justify-center shadow-sm"
+                        onPress={() => {
+                          const newImages = [...markerForm.images];
+                          newImages.splice(index, 1);
+                          setAllValues({
+                            markerForm: { ...markerForm, images: newImages },
+                          });
+                        }}
+                      >
+                        <FontAwesome6 name="trash" size={12} color="white" />
+                      </TouchableOpacity>
+                    </View>
+                  ))}
+                </ScrollView>
+              )}
             </View>
           ) : (
             // ) : (
