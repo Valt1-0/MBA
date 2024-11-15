@@ -5,7 +5,8 @@ Une application mobile permettant aux utilisateurs de créer et partager des lie
 ## 🚀 Technologies
 
 - React Native / Expo
-- Firebase (Authentication, Firestore)
+- NodeJS (20.18)
+- Firebase (Authentication, Firestore, Storage)
 - NativeWind (TailwindCSS)
 - GeoFire
 - OpenRouteService
