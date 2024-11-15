@@ -218,14 +218,14 @@ const SwipeUp = forwardRef(
             {isFullyOpen && (
               <TouchableOpacity
                 style={[styles.closeButton, { backgroundColor: "#DDC97A" }]}
-                onPress={() =>{
-                   setIsFullyOpen(false);
+                onPress={() => {
+                  setIsFullyOpen(false);
                   handlePostionChange(
                     positionValues[positions.length - 2],
                     300,
                     true
-                  )}
-                }
+                  );
+                }}
               >
                 <FontAwesome name="chevron-down" size={24} color="white" />
               </TouchableOpacity>

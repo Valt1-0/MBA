@@ -28,8 +28,6 @@ export default function ContactInfo({ selectedPlace }) {
     }
   }, [selectedPlace]);
 
-  console.log("selectedPlace", selectedPlace.images);
-
   const handleDelete = async () => {
     try {
       const result = await deletePlace(selectedPlace.id);
@@ -144,7 +142,7 @@ export default function ContactInfo({ selectedPlace }) {
           </View>
         </View>
       )}
-      {selectedPlace?.images?.length > 0 && (
+      {selectedPlace?.images && (
         <ImageGallery images={selectedPlace.images} />
       )}
     </View>
