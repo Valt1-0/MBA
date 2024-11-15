@@ -122,15 +122,7 @@ export default function ContactInfo({ selectedPlace }) {
           <Text className="text-gray-700 text-base">Suggérer une modif.</Text>
         </TouchableOpacity>
       </View>
-      {/* Bouton Supprimer */}
-      {userInfo?.uid === selectedPlace?.createdBy?.uid && (
-        <View className="flex-row items-center mb-4">
-          <FontAwesome name="trash" size={24} color="#EF4444" />
-          <TouchableOpacity onPress={handleDelete} className="ml-3">
-            <Text className="text-red-500 text-base">Supprimer</Text>
-          </TouchableOpacity>
-        </View>
-      )}
+
       {selectedPlace.rating && (
         <View className="flex-row items-center mb-4">
           <FontAwesome name="star" size={24} color="#DDC97A" />
@@ -144,6 +136,16 @@ export default function ContactInfo({ selectedPlace }) {
       )}
       {selectedPlace?.images && (
         <ImageGallery images={selectedPlace.images} />
+      )}
+
+      {/* Bouton Supprimer */}
+      {userInfo?.uid === selectedPlace?.createdBy?.uid && (
+        <View className="flex-row items-center mb-4">
+          <FontAwesome name="trash" size={24} color="#EF4444" />
+          <TouchableOpacity onPress={handleDelete} className="ml-3">
+            <Text className="text-red-500 text-base">Supprimer</Text>
+          </TouchableOpacity>
+        </View>
       )}
     </View>
   );
