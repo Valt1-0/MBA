@@ -96,10 +96,10 @@ const HomeScreen = () => {
   const renderTabBar = (props) => (
     <TabBar
       {...props}
-      indicatorStyle={{ backgroundColor: "blue" }}
+      indicatorStyle={{ backgroundColor: "#DDC97A" }}
       style={{ backgroundColor: "white" }}
       inactiveColor="black"
-      activeColor="blue"
+      activeColor="#DDC97A"
     />
   );
 

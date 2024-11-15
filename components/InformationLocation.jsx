@@ -1,12 +1,14 @@
 import React, { useContext, useEffect, useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
 import { deletePlace } from "../utils/functions"; // Assurez-vous d'importer la fonction deletePlace
 import { UserContext } from "../context/UserContext";
+import ImageGallery from "./ImageGallery";
 
 export default function ContactInfo({ selectedPlace }) {
   const [address, setAddress] = useState("");
   const { userInfo } = useContext(UserContext);
+  const rating = selectedPlace?.rating || 0;
 
   useEffect(() => {
     if (selectedPlace) {
@@ -26,6 +28,8 @@ export default function ContactInfo({ selectedPlace }) {
     }
   }, [selectedPlace]);
 
+  console.log("selectedPlace", selectedPlace.images);
+
   const handleDelete = async () => {
     try {
       const result = await deletePlace(selectedPlace.id);
@@ -43,93 +47,106 @@ export default function ContactInfo({ selectedPlace }) {
     }
   };
 
-  return (
-    <View style={styles.container}>
-      {/* Adresse */}
-      <View style={styles.row}>
-        <FontAwesome name="map-marker" size={24} color="blue" />
-        <Text style={styles.text}>{address}</Text>
-      </View>
+  const renderStars = () => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
 
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(
+        <FontAwesome key={`full-${i}`} name="star" size={20} color="#DDC97A" />
+      );
+    }
+
+    if (hasHalfStar) {
+      stars.push(
+        <FontAwesome key="half" name="star-half-o" size={20} color="#DDC97A" />
+      );
+    }
+
+    const emptyStars = 5 - Math.ceil(rating);
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(
+        <FontAwesome
+          key={`empty-${i}`}
+          name="star-o"
+          size={20}
+          color="#DDC97A"
+        />
+      );
+    }
+
+    return stars;
+  };
+
+  return (
+    <View className="flex-1 p-4">
+      {/* Adresse */}
+      <View className="flex-row items-center mb-4">
+        <FontAwesome name="map-marker" size={24} color="#DDC97A" />
+        <Text className="ml-3 text-gray-700 text-base">{address}</Text>
+      </View>
       {/* Horaires */}
       {selectedPlace.hourly && (
-        <View style={styles.row}>
-          <FontAwesome name="clock-o" size={24} color="blue" />
-          <Text style={styles.text}>
-            <Text style={styles.openText}>Ouvert</Text> • Ferme à 18:30
+        <View className="flex-row items-center mb-4">
+          <FontAwesome name="clock-o" size={24} color="#DDC97A" />
+          <Text className="ml-3 text-gray-700 text-base">
+            <Text className="text-green-600 font-semibold">Ouvert</Text>
+            <Text> • Ferme à 18:30</Text>
           </Text>
         </View>
       )}
-
       {/* Site web */}
       {selectedPlace.WebSite && (
-        <View style={styles.row}>
-          <FontAwesome name="globe" size={24} color="blue" />
+        <View className="flex-row items-center mb-4">
+          <FontAwesome name="globe" size={24} color="#DDC97A" />
           <TouchableOpacity onPress={() => console.log("Ouvrir le site web")}>
-            <Text style={styles.linkText}>{selectedPlace.WebSite}</Text>
+            <Text className="ml-3 text-blue-500 underline text-base">
+              {selectedPlace.WebSite}
+            </Text>
           </TouchableOpacity>
         </View>
       )}
-
       {/* Description */}
-      <View style={styles.row}>
-        <FontAwesome name="info" size={24} color="blue" />
-        <Text style={styles.text}>{selectedPlace.description}</Text>
+      <View className="flex-row items-center mb-4">
+        <FontAwesome name="info" size={24} color="#DDC97A" />
+        <Text className="ml-3 text-gray-700 text-base">
+          {selectedPlace.description}
+        </Text>
       </View>
-
       {/* Suggérer une modification */}
-      <View style={styles.row}>
-        <FontAwesome name="pencil" size={24} color="blue" />
+      <View className="flex-row items-center mb-4">
+        <FontAwesome name="pencil" size={24} color="#DDC97A" />
         <TouchableOpacity
           onPress={() => console.log("Suggérer une modification")}
+          className="ml-3"
         >
-          <Text style={styles.text}>Suggérer une modif.</Text>
+          <Text className="text-gray-700 text-base">Suggérer une modif.</Text>
         </TouchableOpacity>
       </View>
-
       {/* Bouton Supprimer */}
       {userInfo?.uid === selectedPlace?.createdBy?.uid && (
-        <View style={styles.row}>
-          <FontAwesome name="trash" size={24} color="red" />
-          <TouchableOpacity onPress={handleDelete}>
-            <Text style={[styles.text, { color: "red" }]}>Supprimer</Text>
+        <View className="flex-row items-center mb-4">
+          <FontAwesome name="trash" size={24} color="#EF4444" />
+          <TouchableOpacity onPress={handleDelete} className="ml-3">
+            <Text className="text-red-500 text-base">Supprimer</Text>
           </TouchableOpacity>
         </View>
+      )}
+      {selectedPlace.rating && (
+        <View className="flex-row items-center mb-4">
+          <FontAwesome name="star" size={24} color="#DDC97A" />
+          <View className="ml-3">
+            <View className="flex-row">{renderStars()}</View>
+            <Text className="text-gray-700 text-sm mt-1">
+              {rating.toFixed(1)} / 5
+            </Text>
+          </View>
+        </View>
+      )}
+      {selectedPlace?.images?.length > 0 && (
+        <ImageGallery images={selectedPlace.images} />
       )}
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-    backgroundColor: "#fff",
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
-  },
-  text: {
-    fontSize: 16,
-    marginLeft: 8,
-  },
-  openText: {
-    color: "green",
-    fontWeight: "bold",
-  },
-  linkText: {
-    fontSize: 16,
-    color: "blue",
-    marginLeft: 8,
-    textDecorationLine: "underline",
-  },
-  seeMore: {
-    marginTop: 16,
-    alignItems: "center",
-  },
-  seeMoreText: {
-    fontSize: 16,
-    color: "blue",
-  },
-});
