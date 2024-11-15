@@ -75,7 +75,7 @@ async function queryNearbyPlaces(center, radiusInM, userInfo) {
 
   const snapshots = await Promise.all(promises);
   const matchingDocs = [];
-console.log("snapshots", snapshots);  
+  console.log("snapshots", snapshots);
   snapshots.forEach((snap) => {
     snap.docs.forEach((doc) => {
       const lat = doc.get("location").latitude;
@@ -87,24 +87,16 @@ console.log("snapshots", snapshots);
       const latitude = doc.get("latitude");
       const longitude = doc.get("longitude");
 
-console.log(
-  "distanceInM",
-  distanceInM,
-  radiusInM,
-  isPublic,
-  createdBy,
-  isPublic || (createdBy && createdBy?.uid === userInfo?.uid)
-);
       if (
         distanceInM <= radiusInM &&
-        (isPublic || (createdBy && createdBy?.uid === userInfo?.uid))
-        && latitude && longitude
+        (isPublic || (createdBy && createdBy?.uid === userInfo?.uid)) &&
+        latitude &&
+        longitude
       ) {
         matchingDocs.push(doc);
       }
     });
   });
-  console.log("matchingDocs", matchingDocs);
 
   return matchingDocs;
 }
