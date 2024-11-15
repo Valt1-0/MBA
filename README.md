@@ -119,11 +119,5 @@ EXPO_PUBLIC_OPEN_ROUTE_SERVICE_API_KEY="votre-clé-api"
 # Lancer l'application
 
 ```
-
 npx expo start -c
-
-```
-
-```
-
 ```
