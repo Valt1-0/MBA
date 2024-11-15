@@ -10,7 +10,6 @@ export default function ContactInfo({ selectedPlace }) {
 
   useEffect(() => {
     if (selectedPlace) {
-      console.log("Selected place:", selectedPlace);
       const { longitude, latitude } = selectedPlace;
       const apiKey = process.env.EXPO_PUBLIC_OPEN_ROUTE_SERVICE_API_KEY;
       const url = `https://api.openrouteservice.org/geocode/reverse?api_key=${apiKey}&point.lon=${longitude}&point.lat=${latitude}`;
