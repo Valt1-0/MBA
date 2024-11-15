@@ -75,7 +75,6 @@ async function queryNearbyPlaces(center, radiusInM, userInfo) {
 
   const snapshots = await Promise.all(promises);
   const matchingDocs = [];
-  console.log("snapshots", snapshots);
   snapshots.forEach((snap) => {
     snap.docs.forEach((doc) => {
       const lat = doc.get("location").latitude;
