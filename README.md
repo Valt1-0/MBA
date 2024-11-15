@@ -8,6 +8,7 @@ Une application mobile permettant aux utilisateurs de créer et partager des lie
 - Firebase (Authentication, Firestore)
 - NativeWind (TailwindCSS)
 - GeoFire
+- OpenRouteService
 
 ## ✨ Fonctionnalités
 

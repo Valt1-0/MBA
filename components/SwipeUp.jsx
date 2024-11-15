@@ -69,7 +69,6 @@ const SwipeUp = forwardRef(
       return closestIndex;
     };
     const handlePostionChange = (position, duration, end = false) => {
-      console.log("position", end);
       if (end) {
         setLastPosition(translateY.value);
         setLastIndexPosition(getPositionIndex(position));
@@ -160,7 +159,6 @@ const SwipeUp = forwardRef(
     };
 
     const onGestureBegin = () => {
-      console.log("onGestureBegin");  
       // Record gesture start position
       startY.value = translateY.value;
     };

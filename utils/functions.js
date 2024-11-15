@@ -9,7 +9,7 @@ import {
   addDoc,
   deleteDoc,
   doc,
-  GeoPoint
+  GeoPoint,
 } from "firebase/firestore";
 import {
   geohashQueryBounds,
@@ -61,7 +61,7 @@ const getIconByType = (type) => {
 
 /* FIREBASE */
 /* Fonction pour obtenir les lieux à proximité */
-async function queryNearbyPlaces(center, radiusInM) {
+async function queryNearbyPlaces(center, radiusInM, userInfo) {
   const bounds = geohashQueryBounds(center, radiusInM);
   const promises = bounds.map((b) => {
     const q = query(
@@ -75,14 +75,23 @@ async function queryNearbyPlaces(center, radiusInM) {
 
   const snapshots = await Promise.all(promises);
   const matchingDocs = [];
-
   snapshots.forEach((snap) => {
     snap.docs.forEach((doc) => {
       const lat = doc.get("location").latitude;
       const lng = doc.get("location").longitude;
       const distanceInKm = distanceBetween([lat, lng], center);
       const distanceInM = distanceInKm * 1000;
-      if (distanceInM <= radiusInM) {
+      const isPublic = doc.get("isPublic") == null ? true : doc.get("isPublic");
+      const createdBy = doc.get("createdBy");
+      const latitude = doc.get("latitude");
+      const longitude = doc.get("longitude");
+
+      if (
+        distanceInM <= radiusInM &&
+        (isPublic || (createdBy && createdBy?.uid === userInfo?.uid)) &&
+        latitude &&
+        longitude
+      ) {
         matchingDocs.push(doc);
       }
     });

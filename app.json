@@ -39,14 +39,21 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Permettez à Jolt d'utiliser votre localisation pour améliorer votre expérience."
+        "NSLocationWhenInUseUsageDescription": "Permettez à MBA d'utiliser votre localisation pour améliorer votre expérience.",
+        "NSPhotoLibraryUsageDescription": "L'application a besoin d'accéder à votre bibliothèque de photos pour vous permettre de partager des images.",
+        "NSPhotoLibraryAddUsageDescription": "L'application a besoin d'accéder à votre bibliothèque de photos pour vous permettre de sauvegarder des images."
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "READ_EXTERNAL_STORAGE"
+      ]
     },
     "androidNavigationBar": {
       "backgroundColor": "#DDC97A"

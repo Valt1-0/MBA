@@ -219,7 +219,7 @@ const HomeScreen = () => {
       ];
       const radiusInM = state.sliderValue * 100;
 
-      const docs = await queryNearbyPlaces(center, radiusInM);
+      const docs = await queryNearbyPlaces(center, radiusInM, userInfo);
       const placesData = docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
@@ -625,6 +625,25 @@ const HomeScreen = () => {
           {state.selectedPlace ? (
             // Condition 1 : Place sélectionnée
             <>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: "white",
+                  paddingVertical: 10,
+                }}
+              >
+                <TouchableOpacity
+                  onPress={() => {
+                    setAllValues({ selectedPlace: null });
+                  }}
+                  style={{
+                    marginLeft: 10,
+                  }}
+                >
+                  <FontAwesome6 name="arrow-left" size={24} color="#4A4A4A" />
+                </TouchableOpacity>
+              </View>
               <TabView
                 navigationState={{ index, routes }}
                 renderScene={renderScene}
@@ -861,6 +880,38 @@ const HomeScreen = () => {
               <Text className="text-gray-700 font-semibold top-3 text-xl">
                 Nouveautés à {state.city}
               </Text>
+              <View style={{ flex: 1, maxHeight: "85%" }}>
+                <FlatList
+                  data={state.places}
+                  keyExtractor={(item) => item.id}
+                  contentContainerStyle={{ paddingBottom: 20 }}
+                  showsVerticalScrollIndicator={true}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      onPress={() => {
+                        handleMarkerPress(item);
+                      }}
+                      className="flex flex-row items-center justify-between p-4 border-b border-gray-300"
+                    >
+                      <View className="flex flex-row items-center">
+                        <FontAwesome6
+                          name={getIconByType(item.type)}
+                          size={24}
+                          color="#4A4A4A"
+                        />
+                        <Text className="text-gray-700 font-semibold text-lg ml-2">
+                          {item.name}
+                        </Text>
+                      </View>
+                      <FontAwesome6
+                        name="chevron-right"
+                        size={20}
+                        color="#4A4A4A"
+                      />
+                    </TouchableOpacity>
+                  )}
+                />
+              </View>
             </>
           )}
         </SwipeUp>
