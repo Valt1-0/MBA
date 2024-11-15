@@ -5,6 +5,22 @@ import { FontAwesome } from "@expo/vector-icons";
 const ImageGallery = ({ images }) => {
   if (!images || images.length === 0) return null;
 
+    const getImageSource = (image) => {
+      // Si l'image est déjà un URI
+      if (typeof image === "string" && image.startsWith("http")) {
+        return { uri: image };
+      }
+      // Si l'image est un objet avec une propriété base64
+      if (image.base64) {
+        return { uri: `data:image/jpeg;base64,${image.base64}` };
+      }
+      // Si l'image est directement en base64
+      if (typeof image === "string") {
+        return { uri: `data:image/jpeg;base64,${image}` };
+      }
+      return image;
+    };
+
   return (
     <View className="mb-4">
       <View className="flex-row items-center mb-2">
@@ -17,12 +33,10 @@ const ImageGallery = ({ images }) => {
         showsHorizontalScrollIndicator={false}
         className="ml-8"
       >
-        {images.map((images, index) => (
+        {images.map((image, index) => (
           <View key={index} className="mr-2">
             <Image
-              source={{
-                uri: images.uri || `data:image/jpeg;base64,${images.base64}`,
-              }}
+              source={getImageSource(image)}
               className="w-32 h-32 rounded-xl"
               resizeMode="cover"
             />
