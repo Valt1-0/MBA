@@ -28,7 +28,6 @@ export default function ContactInfo({ selectedPlace }) {
     }
   }, [selectedPlace]);
 
-  console.log("selectedPlace", selectedPlace.images);
 
   const handleDelete = async () => {
     try {
