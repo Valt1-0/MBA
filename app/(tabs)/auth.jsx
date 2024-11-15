@@ -1,111 +1,157 @@
-import React, { useEffect, useState } from "react";
-import { View, TextInput, Button, Text, StyleSheet } from "react-native";
-import { getAuth } from "firebase/auth";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";
+import { useRouter, useSegments } from "expo-router";
+import { FontAwesome6 } from "@expo/vector-icons";
+import { auth } from "../../utils/firebase";
+import { UserContext } from "../../context/UserContext";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
 } from "firebase/auth";
-import { UserContext } from "../../context/UserContext";
-import { useFocusEffect, useRouter, useSegments } from "expo-router";
 
 const AuthScreen = () => {
+  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [isSignUp, setIsSignUp] = useState(true);
   const { setUser, userInfo } = React.useContext(UserContext);
-  const auth = getAuth();
-  const router = useRouter();
-  const segments = useSegments();
 
-  useEffect(() => { 
+  const router = useRouter();
+
+  useEffect(() => {
     if (userInfo) {
       router.replace("/profile");
     }
   }, [userInfo]);
 
-  // useFocusEffect(() => {
-  //   if (userInfo) {
-  //     router.replace("/profile");
-  //   }
-  // });
+  const handleAuth = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      setSuccess("");
 
-  const handleAuth = () => {
-    if (isSignUp) {
-      createUserWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
+      if (!email || !password) {
+        throw new Error("Veuillez remplir tous les champs");
+      }
+
+      if (!email.includes("@")) {
+        throw new Error("Email invalide");
+      }
+
+      if (password.length < 6) {
+        throw new Error("Le mot de passe doit contenir au moins 6 caractères");
+      }
+
+      if (isSignUp) {
+        try {
+          const userCredential = await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+          );
           setUser(userCredential.user);
-          setSuccess("Account created successfully!");
-          setError("");
-        })
-        .catch((error) => {
+          setSuccess("Compte créé avec succès!");
+        } catch (error) {
           setError(error.message);
-          setSuccess("");
-        });
-    } else {
-      signInWithEmailAndPassword(auth, email, password)
-        .then((userCredential) => {
+          return;
+        }
+      } else {
+        try {
+          const userCredential = await signInWithEmailAndPassword(
+            auth,
+            email,
+            password
+          );
           setUser(userCredential.user);
-          setSuccess("Logged in successfully!");
-          setError("");
-        })
-        .catch((error) => {
+          setSuccess("Connexion réussie!");
+        } catch (error) {
           setError(error.message);
-          setSuccess("");
-        });
+          return;
+        }
+      }
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
   };
-
   return (
-    <View style={styles.container}>
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      <Button title={isSignUp ? "Sign Up" : "Log In"} onPress={handleAuth} />
-      <Button
-        title={isSignUp ? "Switch to Log In" : "Switch to Sign Up"}
-        onPress={() => setIsSignUp(!isSignUp)}
-      />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      {success ? <Text style={styles.success}>{success}</Text> : null}
+    <View className="flex-1 bg-white p-4">
+      <View className="flex-1 justify-center">
+        <Text className="text-2xl font-bold text-center mb-8">
+          {isSignUp ? "Créer un compte" : "Connexion"}
+        </Text>
+
+        {error && (
+          <Text className="text-red-500 text-center mb-4">{error}</Text>
+        )}
+
+        {success && (
+          <Text className="text-green-500 text-center mb-4">{success}</Text>
+        )}
+
+        <TextInput
+          className="border border-gray-300 rounded-lg p-3 mb-4"
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+
+        <View className="relative">
+          <TextInput
+            className="border border-gray-300 rounded-lg p-3 mb-6 pr-12"
+            placeholder="Mot de passe"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+          />
+          <Pressable
+            className="absolute right-4 top-3"
+            onPress={() => setShowPassword(!showPassword)}
+          >
+            <FontAwesome6
+              name={showPassword ? "eye-slash" : "eye"}
+              size={20}
+              color="#666"
+            />
+          </Pressable>
+        </View>
+
+        <Pressable
+          className={`rounded-lg p-4 ${
+            loading ? "bg-gray-400" : "bg-[#DDC97A]"
+          }`}
+          onPress={handleAuth}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text className="text-white text-center font-semibold">
+              {isSignUp ? "Créer un compte" : "Se connecter"}
+            </Text>
+          )}
+        </Pressable>
+
+        <Pressable className="mt-4" onPress={() => setIsSignUp(!isSignUp)}>
+          <Text className="text-[#DDC97A] text-center">
+            {isSignUp ? "Déjà inscrit ? Se connecter" : "Créer un compte"}
+          </Text>
+        </Pressable>
+      </View>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    padding: 16,
-  },
-  input: {
-    height: 40,
-    borderColor: "gray",
-    borderWidth: 1,
-    marginBottom: 12,
-    paddingHorizontal: 8,
-  },
-  error: {
-    color: "red",
-    marginTop: 10,
-  },
-  success: {
-    color: "green",
-    marginTop: 10,
-  },
-});
 
 export default AuthScreen;

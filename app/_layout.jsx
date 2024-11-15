@@ -7,8 +7,11 @@ export default function RootLayout() {
   return (
     <UserProvider>
       <View style={{ flex: 1 }}>
-        <Stack  >
-          <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack>
+          <Stack.Screen
+            name="index"
+            options={{ headerShown: false, href: null }}
+          />
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         </Stack>
       </View>
