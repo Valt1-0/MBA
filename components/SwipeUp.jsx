@@ -203,7 +203,7 @@ const SwipeUp = forwardRef(
     };
 
     return (
-      <View style={{ flex: 1, height: "100%"  }}>
+      <View style={{ flex: 1, height: "100%" }}>
         <PanGestureHandler
           onGestureEvent={onGestureEvent}
           onBegan={onGestureBegin}
@@ -217,10 +217,17 @@ const SwipeUp = forwardRef(
             {children}
             {isFullyOpen && (
               <TouchableOpacity
-                style={styles.closeButton}
-                onPress={handleClose}
+                style={[styles.closeButton, { backgroundColor: "#DDC97A" }]}
+                onPress={() =>{
+                   setIsFullyOpen(false);
+                  handlePostionChange(
+                    positionValues[positions.length - 2],
+                    300,
+                    true
+                  )}
+                }
               >
-                <FontAwesome name="times" size={24} color="white" />
+                <FontAwesome name="chevron-down" size={24} color="white" />
               </TouchableOpacity>
             )}
           </Animated.View>
@@ -235,9 +242,16 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 10,
     right: 10,
-    backgroundColor: "red",
     borderRadius: 20,
     padding: 10,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
 });
 
